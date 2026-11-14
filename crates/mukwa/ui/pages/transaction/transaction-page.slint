@@ -855,6 +855,22 @@ component TransactionTable inherits Table {
     in-out property <bool> new-transaction-active;
     in property <[Transaction]> transactions;
     in property <string> active-account-id;
+    property <bool> view-all-transactions: false;
+    property <bool> show-view-all-button:{
+        if view-all-transactions {
+            return false;
+        }
+        if active-account-id.is-empty && TransactionState.all-transactions.any((transaction) => transaction.audited == true) {
+            return true;
+        }
+        if TransactionState.all-transactions.any((transaction) => transaction.audited == true && transaction.account-id == active-account-id) {
+            return true;
+        }
+        if TransactionState.all-transactions.any((transaction) => transaction.audited == true && transaction.payee-id == active-account-id) {
+            return true;
+        }
+        return false;
+    }
     callback create-account();
 
     Rectangle {
@@ -903,7 +919,7 @@ component TransactionTable inherits Table {
         visible: is-visible();
         height: self.visible ? self.preferred-height : 0;
         function is-visible() -> bool {
-            if transaction.audited {
+            if transaction.audited && !view-all-transactions {
                 return false;
             }
             if active-account-id.is-empty {
@@ -916,6 +932,25 @@ component TransactionTable inherits Table {
                 return true;
             }
             return false;
+        }
+    }
+
+    if show-view-all-button: VerticalLayout {
+        cross-axis-alignment: center;
+        alignment: start;
+        spacing: 4px;
+        padding: 12px;
+        Text {
+            text: @tr("Audited transactions are hidden");
+            color: Colors.textBody;
+        }
+
+        PrimaryButton {
+            text: @tr("View all transactions");
+            theme: ghost;
+            clicked => {
+                view-all-transactions = true;
+            }
         }
     }
 }
