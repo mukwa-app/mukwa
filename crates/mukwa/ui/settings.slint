@@ -7,8 +7,10 @@ import { ComboBox, Button } from "widgets.slint";
 export global Settings {
     callback set-currency-code(string);
     callback set-font-family(string);
+    callback set-color-scheme(ColorScheme);
     in-out property <string> currency-code;
     in-out property <string> font-family;
+    in-out property <ColorScheme> color-scheme;
 }
 
 component Setting inherits HorizontalLayout {
@@ -82,9 +84,11 @@ component AppearanceSettings inherits VerticalLayout {
             changed(value) => {
                 if value == "light" {
                     Colors.scheme = light;
+                    Settings.set-color-scheme(light);
                     return;
                 }
                 Colors.scheme = dark;
+                Settings.set-color-scheme(dark);
             }
         }
     }

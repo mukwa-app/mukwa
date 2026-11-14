@@ -8,9 +8,12 @@ use tracing::warn;
 
 pub fn bind(window: &ui::MainWindow, settings: SettingsStore) {
     let settings_state = window.global::<ui::Settings>();
+    let colors: ui::Colors = window.global();
 
     settings_state.set_currency_code(settings.currency_code().to_shared_string());
     settings_state.set_font_family(settings.font_family().to_shared_string());
+    settings_state.set_color_scheme(settings.color_scheme().into());
+    colors.set_scheme(settings.color_scheme().into());
 
     settings_state.on_set_currency_code({
         let settings_state = settings_state.as_weak();
@@ -33,6 +36,18 @@ pub fn bind(window: &ui::MainWindow, settings: SettingsStore) {
                 return;
             }
             settings_state.unwrap().set_font_family(family);
+        }
+    });
+
+    settings_state.on_set_color_scheme({
+        let settings_state = settings_state.as_weak();
+        let store = settings.clone();
+        move |scheme| {
+            if let Err(err) = store.set_color_scheme(scheme.into()) {
+                warn!("Failed to set color scheme: {err}");
+                return;
+            }
+            settings_state.unwrap().set_color_scheme(scheme);
         }
     });
 }
