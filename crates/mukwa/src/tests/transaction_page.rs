@@ -912,6 +912,79 @@ fn audit_account_button_visibility() -> Result<()> {
 }
 
 #[test]
+fn view_all_transactions_button_visibility() -> Result<()> {
+    let (app, service) = setup()?;
+    let account = service.create_account("Cash", AccountType::Cash)?;
+    service.create_account("Credit card", AccountType::Credit)?;
+    service.create_expense().amount(Money::new(50)).submit()?;
+    service.create_correction_transaction(account.id, Money::new(100))?;
+    service.audit_account(account.id)?;
+
+    let transaction_state: TransactionState = app.global();
+    let account_state: AccountState = app.global();
+    transaction_state.invoke_load_transactions();
+    account_state.invoke_load_accounts();
+
+    let root_element = app.root_element();
+
+    let assert_visible = |visible: bool| {
+        assert_eq!(
+            root_element
+                .query_descendants()
+                .match_accessible_label("Audited transactions are hidden")
+                .find_first()
+                .is_some(),
+            visible
+        );
+        assert_eq!(
+            root_element
+                .query_descendants()
+                .match_accessible_label("View all transactions")
+                .find_first()
+                .is_some(),
+            visible
+        );
+    };
+
+    let sidebar = root_element.find_by_type_name("Sidebar");
+    sidebar.find_by_accessible_label("All accounts").click();
+    assert_visible(true);
+    sidebar.find_by_accessible_label("Cash").click();
+    assert_visible(true);
+    sidebar.find_by_accessible_label("Credit card").click();
+    assert_visible(false);
+    Ok(())
+}
+
+#[test]
+fn view_audited_transactions() -> Result<()> {
+    let (app, service) = setup()?;
+    let account = service.create_account("", AccountType::Cash)?;
+    service.create_expense().amount(Money::new(50)).submit()?;
+    service.create_correction_transaction(account.id, Money::new(100))?;
+    service.audit_account(account.id)?;
+
+    let transaction_state: TransactionState = app.global();
+    transaction_state.invoke_load_transactions();
+
+    let root_element = app.root_element();
+    assert!(
+        root_element
+            .find_all_by_type_name("TransactionRow")
+            .is_empty()
+    );
+
+    root_element
+        .find_by_accessible_label("View all transactions")
+        .click();
+    assert_eq!(
+        root_element.find_all_by_type_name("TransactionRow").len(),
+        2
+    );
+    Ok(())
+}
+
+#[test]
 fn audit_account_with_matching_balance() -> Result<()> {
     let (app, service) = setup()?;
     let settings: Settings = app.global();
@@ -969,7 +1042,7 @@ fn hide_audited_transactions() -> Result<()> {
     transaction_state.invoke_load_transactions();
 
     let root_element = app.root_element();
-    let table = find_by_type_name(&root_element, "Table");
+    let table = find_by_type_name(&root_element, "TransactionTable");
     let transactions = find_all_by_type_name(&root_element, "TransactionRow");
     assert_eq!(transactions.len(), 3);
     transaction_state.invoke_audit_account(account.id.to_shared_string());
