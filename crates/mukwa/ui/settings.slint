@@ -70,6 +70,25 @@ component AppearanceSettings inherits VerticalLayout {
         color: Colors.textBody;
     }
 
+    Setting {
+        text: @tr("Theme");
+        helper-text: @tr("Choose either light mode or dark mode.");
+        ComboBox {
+            options: [
+                { value: "light", text: @tr("Light") },
+                { value: "dark", text: @tr("Dark") },
+            ];
+            current-value: Colors.scheme == light ? "light" : "dark";
+            changed(value) => {
+                if value == "light" {
+                    Colors.scheme = light;
+                    return;
+                }
+                Colors.scheme = dark;
+            }
+        }
+    }
+
     HorizontalLayout {
         alignment: space-between;
         cross-axis-alignment: center;
