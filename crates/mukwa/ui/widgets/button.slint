@@ -112,7 +112,7 @@ export component IconButton {
             return Colors.accent.darker(0.2);
         }
         if (button-theme == IconButtonTheme.neutral) {
-            return Colors.neutral50;
+            return Colors.surface0;
         }
         return transparent;
     }
@@ -122,9 +122,9 @@ export component IconButton {
             return Colors.accent;
         }
         if (button-theme == IconButtonTheme.neutral) {
-            return Colors.neutral100;
+            return Colors.surface1;
         }
-        return Colors.neutral50;
+        return Colors.surface0;
     }
 
     function icon-color(button-theme: IconButtonTheme) -> color {
@@ -202,7 +202,7 @@ export component PrimaryButton {
             return Colors.accent;
         }
         if (button-theme == PrimaryButtonTheme.neutral) {
-            return Colors.neutral50;
+            return Colors.surface0;
         }
         if (button-theme == PrimaryButtonTheme.danger) {
             return Colors.red500.transparentize(0.9);
@@ -215,10 +215,10 @@ export component PrimaryButton {
             return Colors.accent.darker(0.2);
         }
         if (button-theme == PrimaryButtonTheme.neutral) {
-            return Colors.neutral100;
+            return Colors.surface1;
         }
         if (button-theme == PrimaryButtonTheme.ghost) {
-            return Colors.neutral100;
+            return Colors.surface1;
         }
         if (button-theme == PrimaryButtonTheme.text-accent) {
             return Colors.accent.transparentize(0.85);

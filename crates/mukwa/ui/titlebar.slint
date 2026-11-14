@@ -28,7 +28,7 @@ export component TitleBarButton {
 
     function hover-background-color(button-theme: TitleBarButtonTheme) -> color {
         if (button-theme == TitleBarButtonTheme.windows) {
-            return Colors.neutral100;
+            return Colors.surface1;
         }
         if (button-theme == TitleBarButtonTheme.windows-x) {
             return #e81120;
@@ -65,7 +65,7 @@ export component TitleBar inherits WindowMoveArea {
     height: 40px;
 
     Rectangle {
-        background: Colors.neutral25;
+        background: Colors.scheme == light ? Colors.surface0 : Colors.page;
     }
 
     TouchArea {
@@ -109,7 +109,7 @@ export component TitleBar inherits WindowMoveArea {
                 if AutoUpdater.update-state == downloading: ProgressBar {
                     width: 150px;
                     thumb-color: Colors.accent;
-                    track-color: Colors.neutral100;
+                    track-color: Colors.surface1;
                     progress: AutoUpdater.download-progress;
                 }
             }
@@ -122,6 +122,7 @@ export component TitleBar inherits WindowMoveArea {
                     clicked => minimized();
                     Image {
                         source: @image-url("assets/fluent_subtract.svg");
+                        colorize: Colors.textBody;
                     }
                 }
 
@@ -133,6 +134,7 @@ export component TitleBar inherits WindowMoveArea {
                         width: 16px;
                         height: 16px;
                         source: root.window-maximized ? @image-url("assets/fluent_square_multiple.svg") : @image-url("assets/fluent_square.svg");
+                        colorize: Colors.textBody;
                     }
                 }
 
@@ -142,6 +144,7 @@ export component TitleBar inherits WindowMoveArea {
                     accessible-label: @tr("Close window");
                     Image {
                         source: @image-url("assets/fluent_dismiss.svg");
+                        colorize: Colors.textBody;
                     }
                 }
             }

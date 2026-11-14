@@ -108,7 +108,7 @@ enum Section {
 component SettingsButton inherits Button {
     in property <bool> selected: false;
     alignment: start;
-    background: selected ? Colors.neutral50 : transparent;
+    background: selected ? Colors.surface0 : transparent;
     border-radius: 4px;
 }
 
@@ -121,16 +121,16 @@ export component SettingsDialog inherits PopupWindow {
     property <Section> active-section: general;
 
     Rectangle {
-        background: white;
+        background: Colors.page;
         border-radius: 20px;
-        border-color: Colors.neutral50;
+        border-color: Colors.borderNeutral;
         border-width: 1px;
 
         HorizontalLayout {
             padding: 2px;
             Rectangle {
                 max-width: 250px;
-                background: Colors.neutral25;
+                background: Colors.page;
                 border-top-left-radius: 20px;
                 VerticalLayout {
                     padding: 12px;
@@ -153,6 +153,11 @@ export component SettingsDialog inherits PopupWindow {
                         }
                     }
                 }
+            }
+
+            Rectangle {
+                width: 1px;
+                background: Colors.borderNeutral;
             }
 
             if active-section == general: GeneralSettings { }

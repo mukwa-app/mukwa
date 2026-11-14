@@ -163,7 +163,7 @@ component CategoryItem inherits VerticalLayout {
     Rectangle {
         width: 100%;
         height: 1px;
-        background: Colors.neutral50;
+        background: Colors.surface1;
     }
 }
 
@@ -205,7 +205,7 @@ component CategoryGroupItem {
     Rectangle {
         states [
             drag-over when drop-area.has-drag: {
-                background: Colors.neutral50;
+                background: Colors.surface0;
                 in {
                     animate background { duration: 150ms; }
                 }
@@ -236,10 +236,10 @@ component CategoryGroupItem {
             close-policy: close-on-click-outside;
 
             Rectangle {
-                background: white;
+                background: Colors.page;
                 border-width: 1px;
                 border-radius: 4px;
-                border-color: Colors.neutral50;
+                border-color: Colors.borderNeutral;
             }
 
             layout := VerticalLayout {
@@ -277,7 +277,7 @@ component CategoryGroupItem {
         }
 
         Rectangle {
-            background: Colors.neutral25;
+            background: Colors.surface0;
             HorizontalLayout {
                 padding-left: 8px;
                 padding-right: 16px;
@@ -447,10 +447,10 @@ component SpendingPageBody inherits VerticalLayout {
         close-policy: close-on-click-outside;
 
         Rectangle {
-            background: white;
+            background: Colors.page;
             border-width: 1px;
             border-radius: 4px;
-            border-color: Colors.neutral50;
+            border-color: Colors.borderNeutral;
         }
 
         layout := VerticalLayout {
@@ -558,7 +558,7 @@ export component SpendingPage inherits HorizontalLayout {
 
     Rectangle {
         width: 1px;
-        background: Colors.neutral100;
+        background: Colors.borderNeutral;
     }
 
     if !selected-category-id.is-empty: SpendingPageSideBar {

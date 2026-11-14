@@ -88,8 +88,8 @@ export component ComboBox {
         }
 
         Rectangle {
-            background: white;
-            border-color: focus-scope.has-focus ? Colors.borderAccent : Colors.neutral50;
+            background: Colors.surface0;
+            border-color: focus-scope.has-focus ? Colors.borderAccent : Colors.borderNeutral;
             border-width: 1px;
             border-radius: 8px;
             clip: true;
@@ -122,10 +122,10 @@ export component ComboBox {
         forward-focus: popup-fs;
 
         popup-background := Rectangle {
-            background: white;
+            background: Colors.surface0;
             border-radius: 8px;
             border-width: 1px;
-            border-color: Colors.neutral50;
+            border-color: Colors.borderNeutral;
         }
 
         popup-fs := FocusScope {
@@ -169,7 +169,7 @@ export component ComboBox {
                     }
 
                     Rectangle {
-                        background: Colors.neutral50;
+                        background: Colors.surface1;
                         border-radius: 4px;
                         height: 24px;
                         HorizontalLayout {
@@ -204,7 +204,7 @@ export component ComboBox {
                         spacing: 4px;
 
                         for option[i] in options: Rectangle {
-                            background: selected-index == i ? Colors.neutral50 : white;
+                            background: selected-index == i ? Colors.surface1 : Colors.surface0;
                             visible: current-index != i;
                             height: current-index == i ? 0px : 24px;
                             border-radius: 4px;
@@ -214,7 +214,7 @@ export component ComboBox {
 
                             states [
                                 hovered when inner-touch-area.has-hover: {
-                                    background: Colors.neutral50;
+                                    background: Colors.surface1;
                                     in {
                                         animate background { duration: 150ms; }
                                     }

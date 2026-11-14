@@ -63,7 +63,7 @@ component SidebarButton inherits Button {
     padding-left: 16px;
     padding-right: 16px;
     font-weight: FontWeight.medium;
-    background: selected ? Colors.neutral50 : transparent;
+    background: selected ? Colors.surface0 : transparent;
     border-radius: 4px;
 
     @children
@@ -164,7 +164,7 @@ component CreateAccountDialog inherits PopupWindow {
     }
 
     Rectangle {
-        background: white;
+        background: Colors.page;
         border-radius: 24px;
         border-width: 1px;
         border-color: Colors.borderNeutral;
@@ -238,7 +238,7 @@ component Sidebar {
     }
 
     background := Rectangle {
-        background: Colors.neutral25;
+        background: Colors.scheme == light ? Colors.surface0 : Colors.page;
     }
 
     create-account-dialog := CreateAccountDialog { }
@@ -317,7 +317,7 @@ component Sidebar {
 
         Rectangle {
             width: 1px;
-            background: Colors.neutral100;
+            background: Colors.borderNeutral;
         }
     }
 
@@ -330,7 +330,7 @@ export component MainWindow inherits Window {
 
     preferred-width: 750px;
     preferred-height: 750px;
-    background: white;
+    background: Colors.page;
     title: "Mukwa";
     icon: @image-url("../resources/icons/app-icon.png");
     default-font-family: Settings.font-family;
@@ -355,7 +355,7 @@ export component MainWindow inherits Window {
         }
 
         if Platform.os == windows: Rectangle {
-            background: Colors.neutral100;
+            background: Colors.borderNeutral;
             height: 1px;
         }
 

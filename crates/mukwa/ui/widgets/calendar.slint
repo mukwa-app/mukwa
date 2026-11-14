@@ -86,8 +86,8 @@ export component Calendar {
     }
 
     Rectangle {
-        background: white;
-        border-color: Colors.neutral50;
+        background: Colors.scheme == light ? Colors.page : Colors.surface0;
+        border-color: Colors.borderNeutral;
         border-width: 1px;
         border-radius: 8px;
     }
@@ -181,7 +181,7 @@ export component Calendar {
 
                     states [
                         hovered when touch-area.has-hover && day != date.day && enabled: {
-                            background: Colors.neutral50;
+                            background: Colors.surface1;
                             in {
                                 animate background { duration: 50ms; }
                             }
