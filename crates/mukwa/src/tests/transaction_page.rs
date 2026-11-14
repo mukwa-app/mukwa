@@ -969,7 +969,7 @@ fn hide_audited_transactions() -> Result<()> {
     transaction_state.invoke_load_transactions();
 
     let root_element = app.root_element();
-    let table = find_by_type_name(&root_element, "Table");
+    let table = find_by_type_name(&root_element, "TransactionTable");
     let transactions = find_all_by_type_name(&root_element, "TransactionRow");
     assert_eq!(transactions.len(), 3);
     transaction_state.invoke_audit_account(account.id.to_shared_string());

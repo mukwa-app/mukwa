@@ -849,6 +849,77 @@ component Audit {
     }
 }
 
+component TransactionTable inherits Table {
+    width: 100%;
+    property <int> length: active-account-id.is-empty ? 7 : 6;
+    in-out property <bool> new-transaction-active;
+    in property <[Transaction]> transactions;
+    in property <string> active-account-id;
+    callback create-account();
+
+    Rectangle {
+        width: 100%;
+        height: 2px;
+        background: Colors.neutral50;
+    }
+
+    TransactionTableHeader {
+        length: length;
+        show-account: active-account-id.is-empty;
+    }
+
+    if new-transaction-active: NewTransactionRow {
+        length: length;
+        active-account-id: active-account-id;
+        closed => {
+            new-transaction-active = false;
+        }
+    }
+
+    if AccountState.accounts.length == 0: VerticalLayout {
+        alignment: center;
+        cross-axis-alignment: center;
+        spacing: 12px;
+        padding: 48px;
+
+        Text {
+            text: @tr("Create your first account. You can import transactions or add them manually.");
+            wrap: word-wrap;
+            max-width: 350px;
+            horizontal-alignment: center;
+            color: Colors.textBody;
+        }
+
+        PrimaryButton {
+            text: @tr("Create account");
+            clicked => create-account();
+        }
+    }
+
+    for transaction[index] in transactions: TransactionRow {
+        transaction: transaction;
+        active-account-id: active-account-id;
+        length: length;
+        visible: is-visible();
+        height: self.visible ? self.preferred-height : 0;
+        function is-visible() -> bool {
+            if transaction.audited {
+                return false;
+            }
+            if active-account-id.is-empty {
+                return true;
+            }
+            if transaction.account-id == active-account-id {
+                return true;
+            }
+            if transaction.payee-id == active-account-id {
+                return true;
+            }
+            return false;
+        }
+    }
+}
+
 export component TransactionPage inherits VerticalLayout {
     in property <[Transaction]> transactions;
     in property <string> active-account-id;
@@ -942,73 +1013,10 @@ export component TransactionPage inherits VerticalLayout {
         }
     }
 
-    Table {
-        width: 100%;
-        property <int> length: active-account-id.is-empty ? 7 : 6;
-
-        Rectangle {
-            width: 100%;
-            height: 2px;
-            background: Colors.neutral50;
-        }
-
-        TransactionTableHeader {
-            length: length;
-            show-account: active-account-id.is-empty;
-        }
-
-        if new-transaction-active: NewTransactionRow {
-            length: length;
-            active-account-id: active-account-id;
-            closed => {
-                new-transaction-active = false;
-                if active-account-id.is-empty {
-                    // balance.text = State.format-money(TransactionState.total-balance(),Settings.currency-code)
-                }
-            }
-        }
-
-        if AccountState.accounts.length == 0: VerticalLayout {
-            alignment: center;
-            cross-axis-alignment: center;
-            spacing: 12px;
-            padding: 48px;
-
-            Text {
-                text: @tr("Create your first account. You can import transactions or add them manually.");
-                wrap: word-wrap;
-                max-width: 350px;
-                horizontal-alignment: center;
-                color: Colors.textBody;
-            }
-
-            PrimaryButton {
-                text: @tr("Create account");
-                clicked => create-account();
-            }
-        }
-
-        for transaction[index] in transactions: TransactionRow {
-            transaction: transaction;
-            active-account-id: active-account-id;
-            length: length;
-            visible: is-visible();
-            height: self.visible ? self.preferred-height : 0;
-            function is-visible() -> bool {
-                if transaction.audited {
-                    return false;
-                }
-                if active-account-id.is-empty {
-                    return true;
-                }
-                if transaction.account-id == active-account-id {
-                    return true;
-                }
-                if transaction.payee-id == active-account-id {
-                    return true;
-                }
-                return false;
-            }
-        }
+    TransactionTable {
+        transactions: transactions;
+        active-account-id: active-account-id;
+        new-transaction-active <=> new-transaction-active;
+        create-account => create-account();
     }
 }
