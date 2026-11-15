@@ -3,15 +3,16 @@
 
 use std::ops::ControlFlow;
 
-use crate::ui::{AccountState, CategoryState, Settings, TransactionState};
+use crate::ui::{AccountState, CategoryState, Colors, Settings, TransactionState};
 
 use super::*;
-use i_slint_backend_testing::ElementHandle;
+use i_slint_backend_testing::{ElementHandle, ElementRoot};
 use jiff::civil::date;
 use jiff::{ToSpan, Zoned};
 use mukwa_core::fmt::CurrencyFormatter;
 use mukwa_core::service::AccountType;
 use mukwa_core::{Currency, Money};
+use slint::language::ColorScheme;
 use slint::platform::{Key, PointerEventButton};
 use slint::{Model, SharedString, ToSharedString};
 use tempfile::tempdir;
@@ -441,5 +442,36 @@ fn title_bar_shows_update_state() -> Result<()> {
             .find_first()
             .is_some()
     );
+    Ok(())
+}
+
+#[test]
+fn change_color_scheme() -> Result<()> {
+    let (app, _) = setup()?;
+    let colors: Colors = app.global();
+    let settings: Settings = app.global();
+    settings.set_color_scheme(ColorScheme::Light);
+    let root_element = app.root_element();
+    root_element.find_by_accessible_label("Settings").click();
+    root_element.find_by_accessible_label("Appearance").click();
+
+    let appearance = root_element.find_by_type_name("AppearanceSettings");
+    assert!(
+        appearance
+            .query_descendants()
+            .match_accessible_label("Theme")
+            .find_first()
+            .is_some()
+    );
+
+    appearance.find_by_accessible_label("Light").click();
+    appearance.find_by_accessible_label("Dark").click();
+    assert_eq!(settings.get_color_scheme(), ColorScheme::Dark);
+    assert_eq!(colors.get_scheme(), ColorScheme::Dark);
+
+    appearance.find_by_accessible_label("Dark").click();
+    appearance.find_by_accessible_label("Light").click();
+    assert_eq!(settings.get_color_scheme(), ColorScheme::Light);
+    assert_eq!(colors.get_scheme(), ColorScheme::Light);
     Ok(())
 }
