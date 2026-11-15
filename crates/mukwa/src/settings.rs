@@ -3,6 +3,7 @@
 
 use crate::Result;
 use std::cell::{Ref, RefCell, RefMut};
+use std::fmt::Display;
 use std::fs::File;
 use std::io;
 use std::io::Read;
@@ -42,6 +43,13 @@ impl SettingsStore {
         Ok(())
     }
 
+    pub fn set_color_scheme(&self, scheme: ColorScheme) -> Result<()> {
+        self.settings_mut().appearance.color_scheme = scheme;
+        self.write()?;
+        info!("Updated color scheme to {scheme}");
+        Ok(())
+    }
+
     /// Returns the curreny code.
     pub fn currency_code(&self) -> String {
         self.settings().currency_code.clone()
@@ -50,6 +58,11 @@ impl SettingsStore {
     /// Returns the font family.
     pub fn font_family(&self) -> String {
         self.settings().appearance.font_family.clone()
+    }
+
+    /// Returns the color scheme.
+    pub fn color_scheme(&self) -> ColorScheme {
+        self.settings().appearance.color_scheme
     }
 
     fn settings(&self) -> Ref<'_, Settings> {
@@ -114,6 +127,40 @@ impl SettingsStore {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, PartialOrd, Default)]
+pub enum ColorScheme {
+    #[default]
+    Light,
+    Dark,
+}
+
+impl From<slint::language::ColorScheme> for ColorScheme {
+    fn from(value: slint::language::ColorScheme) -> Self {
+        match value {
+            slint::language::ColorScheme::Dark => Self::Dark,
+            _ => Self::Light,
+        }
+    }
+}
+
+impl From<ColorScheme> for slint::language::ColorScheme {
+    fn from(value: ColorScheme) -> Self {
+        match value {
+            ColorScheme::Dark => slint::language::ColorScheme::Dark,
+            ColorScheme::Light => slint::language::ColorScheme::Light,
+        }
+    }
+}
+
+impl Display for ColorScheme {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ColorScheme::Light => write!(f, "Light"),
+            ColorScheme::Dark => write!(f, "Dark"),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub struct Settings {
@@ -127,6 +174,8 @@ pub struct Settings {
 #[serde(rename_all = "kebab-case")]
 pub struct Appearance {
     font_family: String,
+    #[serde(default)]
+    color_scheme: ColorScheme,
 }
 
 impl Default for Appearance {
@@ -142,6 +191,7 @@ impl Default for Appearance {
 
         Self {
             font_family: String::from(default_font),
+            color_scheme: ColorScheme::default(),
         }
     }
 }

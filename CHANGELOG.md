@@ -1,5 +1,6 @@
 ## (unreleased)
 
+- Added dark mode.
 - Budgets now carry over to future months.
 - Budgets now show a negative balance when overspent, instead of showing 0.
 - Changed the way credit payment categories are handled. Expenses on credit accounts are added to the credit payment
