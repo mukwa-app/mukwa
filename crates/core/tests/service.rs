@@ -1596,3 +1596,21 @@ fn balance_correction_error_when_balances_are_equal() -> Result<()> {
     );
     Ok(())
 }
+
+#[test]
+fn cant_delete_audited_transaction() -> crate::Result<()> {
+    let service = Service::open_in_memory()?;
+    let account = service.create_account("", AccountType::Cash)?;
+    let account2 = service.create_account("", AccountType::Cash)?;
+    let t1 = service.create_expense().account(account.id).submit()?;
+    let t2 = service.create_expense().account(account2.id).submit()?;
+
+    service.audit_account(account.id)?;
+    service.delete_transaction(t1.id)?;
+    service.delete_transaction(t2.id)?;
+
+    let transactions = service.fetch_transactions()?;
+    assert_eq!(transactions.len(), 1);
+    assert_eq!(transactions[0].id, t1.id);
+    Ok(())
+}

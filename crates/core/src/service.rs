@@ -1295,9 +1295,11 @@ impl Service {
         }
     }
 
+    /// Deletes the transaction.
     pub fn delete_transaction(&self, id: Uuid) -> crate::Result<()> {
         let connection = self.connection();
-        let mut stmt = connection.prepare_cached("DELETE FROM transactions WHERE id = ?")?;
+        let mut stmt = connection
+            .prepare_cached("DELETE FROM transactions WHERE id = ? AND is_audited = FALSE")?;
         stmt.execute([id.to_string()])?;
         Ok(())
     }
