@@ -211,6 +211,12 @@ export component ComboBox {
                             accessible-value: option.value;
                             accessible-id: option.value;
                             accessible-role: list-item;
+                            accessible-action-default => {
+                                root.select(i);
+                                changed(options[selected-index].value);
+                                current-index = selected-index;
+                                popup.close();
+                            }
 
                             states [
                                 hovered when inner-touch-area.has-hover: {

@@ -106,7 +106,7 @@ impl CreateTransaction {
             let combobox = find_by_type_name(&account_cell, "ComboBox");
             assert!(
                 combobox.accessible_expanded().unwrap(),
-                "Account cell ComboBox did not open"
+                "AccountCell ComboBox did not open"
             );
 
             let account_options = account_cell
@@ -116,7 +116,15 @@ impl CreateTransaction {
 
             let account_option = rng.choice(account_options).unwrap();
             let account_id = account_option.accessible_id().unwrap();
-            account_option.mock_single_click(PointerEventButton::Left);
+            account_option.invoke_accessible_default_action();
+            assert!(
+                account_cell
+                    .query_descendants()
+                    .match_type_name("ComboBox")
+                    .find_first()
+                    .is_none(),
+                "AccountCell ComboBox did not close"
+            );
             account_id
         } else {
             accounts[0].id.to_shared_string()
