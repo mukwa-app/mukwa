@@ -3,24 +3,22 @@
 
 use std::ops::ControlFlow;
 
-use crate::ui::{AccountState, CategoryState, Colors, Settings, TransactionState};
+use mukwa::ui::{
+    self, AccountState, CategoryState, Colors, MainWindow, Settings, TransactionState,
+};
 
-use super::*;
 use i_slint_backend_testing::{ElementHandle, ElementRoot};
 use jiff::civil::date;
 use jiff::{ToSpan, Zoned};
+use mukwa::{Result, SettingsStore, controllers};
+use mukwa::{init_service, testing::*};
 use mukwa_core::fmt::CurrencyFormatter;
 use mukwa_core::service::AccountType;
 use mukwa_core::{Currency, Money};
 use slint::language::ColorScheme;
 use slint::platform::{Key, PointerEventButton};
-use slint::{Model, SharedString, ToSharedString};
+use slint::{ComponentHandle, Model, SharedString, ToSharedString};
 use tempfile::tempdir;
-
-pub use testing::*;
-mod analytics_page;
-mod spending_page;
-mod transaction_page;
 
 #[test]
 fn total_spent_all_only_includes_expenses() -> Result<()> {

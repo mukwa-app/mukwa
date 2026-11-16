@@ -3,17 +3,17 @@
 
 use std::ops::ControlFlow;
 
-use super::Result;
-use crate::{
+use i_slint_backend_testing::{
+    AccessibleRole, ElementHandle, ElementRoot, mock_elapsed_time, send_keyboard_string_sequence,
+};
+use jiff::Zoned;
+use mukwa::Result;
+use mukwa::{
     testing::*,
     ui::{
         self, AccountState, CategoryState, CreateTransactionOpts, Settings, State, TransactionState,
     },
 };
-use i_slint_backend_testing::{
-    AccessibleRole, ElementHandle, ElementRoot, mock_elapsed_time, send_keyboard_string_sequence,
-};
-use jiff::Zoned;
 use mukwa_core::service::TransactionKind;
 use mukwa_core::{Currency, Money, fmt::CurrencyFormatter, service::AccountType};
 use slint::{
@@ -89,7 +89,7 @@ fn open_and_close_searchbox() -> Result<()> {
 
 #[test]
 fn type_in_searchbox() -> Result<()> {
-    let (app, service) = super::setup()?;
+    let (app, service) = setup()?;
     let transaction_state: TransactionState = app.global();
     service.create_account("", AccountType::Cash)?;
     service.create_expense().note("Burger").submit()?;
@@ -127,7 +127,7 @@ fn type_in_searchbox() -> Result<()> {
 
 #[test]
 fn total_balance_does_not_update_with_search() -> Result<()> {
-    let (app, service) = super::setup()?;
+    let (app, service) = setup()?;
     let transaction_state: TransactionState = app.global();
     let account_state: AccountState = app.global();
     let settings: Settings = app.global();
@@ -181,7 +181,7 @@ fn total_balance_does_not_update_with_search() -> Result<()> {
 
 #[test]
 fn account_balance_does_not_update_with_search() -> Result<()> {
-    let (app, service) = super::setup()?;
+    let (app, service) = setup()?;
     let account_state: AccountState = app.global();
     let transaction_state: TransactionState = app.global();
     let settings: Settings = app.global();
@@ -250,7 +250,7 @@ fn account_balance_does_not_update_with_search() -> Result<()> {
 
 #[test]
 fn editing_transaction_does_not_reload_all_transactions() -> Result<()> {
-    let (app, service) = super::setup()?;
+    let (app, service) = setup()?;
     let transaction_state: TransactionState = app.global();
     let settings: Settings = app.global();
     settings.set_currency_code("USD".to_shared_string());

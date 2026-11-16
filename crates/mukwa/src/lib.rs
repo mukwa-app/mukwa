@@ -4,8 +4,6 @@
 pub mod controllers;
 mod settings;
 pub mod testing;
-#[cfg(test)]
-mod tests;
 pub mod ui;
 
 pub use mukwa_core::error::{Error, Result};
@@ -20,7 +18,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use tracing::debug;
 
-fn init_service(dir: impl AsRef<Path>) -> Result<Service> {
+pub fn init_service(dir: impl AsRef<Path>) -> Result<Service> {
     let path = dir.as_ref().join("data.sqlite");
     debug!("Opening SQLite database at {:?}", &path);
     let mut connection = Connection::open(&path)?;

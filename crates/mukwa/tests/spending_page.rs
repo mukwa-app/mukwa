@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
-use crate::tests::{find_by_accessible_label, find_by_type_name};
-use crate::ui::{CategoryState, MainWindow, Settings};
-use crate::{SettingsStore, controllers};
 use i_slint_backend_testing::{ElementHandle, ElementRoot};
 use jiff::civil::Date;
 use jiff::{ToSpan, Zoned};
+use mukwa::testing::{self, find_by_accessible_label, find_by_type_name};
+use mukwa::ui::{CategoryState, MainWindow, Settings};
+use mukwa::{SettingsStore, controllers};
+use mukwa_core::create_test_db;
 use mukwa_core::service::{AccountType, CreateBudgetOpts};
 use mukwa_core::{Currency, Money, fmt::CurrencyFormatter, service::Service};
 use slint::{
@@ -14,10 +15,14 @@ use slint::{
     platform::{Key, PointerEventButton},
 };
 
-use super::Result;
+use mukwa::Result;
 
 fn setup() -> Result<(MainWindow, Service)> {
-    let (app, service) = super::setup()?;
+    i_slint_backend_testing::init_no_event_loop();
+    let service = Service::new(create_test_db());
+    let app = MainWindow::new()?;
+    let settings = SettingsStore::open_in_memory();
+    controllers::bind_all(&app, &service, &settings)?;
 
     ElementHandle::find_by_accessible_label(&app, "Spending")
         .next()
@@ -592,7 +597,7 @@ fn category_shown_in_sidebar() -> Result<()> {
 
 #[test]
 fn assign_button_reloads_left_to_budget() -> Result<()> {
-    let (app, service) = super::setup()?;
+    let (app, service) = testing::setup()?;
     let settings: Settings = app.global();
     settings.set_currency_code("CAD".to_shared_string());
 
