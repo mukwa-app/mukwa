@@ -1614,3 +1614,35 @@ fn cant_delete_audited_transaction() -> crate::Result<()> {
     assert_eq!(transactions[0].id, t1.id);
     Ok(())
 }
+
+#[test]
+fn cant_edit_audited_transaction() -> crate::Result<()> {
+    let service = Service::open_in_memory()?;
+    let group = service.create_category_group("")?;
+    let category = service.create_category("", group.id)?;
+    let category2 = service.create_category("", group.id)?;
+
+    let account = service.create_account("", AccountType::Cash)?;
+    let account2 = service.create_account("", AccountType::Cash)?;
+
+    let mut transaction = service
+        .create_expense()
+        .amount(Money::new(500))
+        .account(account.id)
+        .category(category.id)
+        .submit()?;
+
+    service.audit_account(account.id)?;
+    let _ = service.set_transaction_account(transaction.id, account2.id);
+    let _ = service.set_transaction_payee(transaction.id, account2.id);
+    let _ = service.set_transaction_outflow(transaction.id, Money::ZERO);
+    let _ = service.set_transaction_inflow(transaction.id, Money::ZERO);
+    let _ = service.set_transaction_date(transaction.id, date(1999, 1, 1));
+    let _ = service.set_transaction_note(transaction.id, "");
+    let _ = service.set_transaction_category(transaction.id, category2.id);
+
+    transaction.audited = true;
+    let transactions = service.fetch_transactions()?;
+    assert_eq!(transaction, transactions[0]);
+    Ok(())
+}

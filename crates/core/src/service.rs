@@ -1124,6 +1124,9 @@ impl Service {
     }
 
     pub fn set_transaction_note(&self, id: Uuid, note: &str) -> crate::Result<Transaction> {
+        if self.get_transaction(id)?.audited {
+            return Err(Error::new("Cannot edit audited transaction"));
+        }
         let connection = self.connection();
         let sql = "UPDATE transactions SET note = ?1 WHERE id = ?2 RETURNING *";
         let mut stmt = connection.prepare_cached(sql)?;
@@ -1135,6 +1138,9 @@ impl Service {
     }
 
     pub fn set_transaction_date(&self, id: Uuid, date: Date) -> crate::Result<Transaction> {
+        if self.get_transaction(id)?.audited {
+            return Err(Error::new("Cannot edit audited transaction"));
+        }
         let connection = self.connection();
         let sql = "UPDATE transactions SET transaction_date = ?1 WHERE id = ?2 RETURNING *";
         let mut stmt = connection.prepare_cached(sql)?;
@@ -1163,6 +1169,10 @@ impl Service {
             return Err(error);
         }
 
+        if transaction.audited {
+            return Err(Error::new("Cannot edit audited transaction"));
+        }
+
         let connection = self.connection();
         let sql = "UPDATE transactions SET category_id = ?1 WHERE id = ?2 RETURNING *";
         let mut stmt = connection.prepare_cached(sql)?;
@@ -1179,6 +1189,9 @@ impl Service {
         account_id: Uuid,
     ) -> crate::Result<Transaction> {
         let transaction = self.get_transaction(id)?;
+        if transaction.audited {
+            return Err(Error::new("Cannot edit audited transaction"));
+        }
         let sql = match transaction.transaction_type() {
             TransactionType::Income => {
                 "UPDATE transactions SET receiver_id = ?1, sender_id = NULL WHERE id = ?2 RETURNING *"
@@ -1201,6 +1214,10 @@ impl Service {
 
     pub fn set_transaction_payee(&self, id: Uuid, account_id: Uuid) -> crate::Result<Transaction> {
         let transaction = self.get_transaction(id)?;
+        if transaction.audited {
+            return Err(Error::new("Cannot edit audited transaction"));
+        }
+
         let sql = match transaction.transaction_type() {
             TransactionType::Income => {
                 "UPDATE transactions SET sender_id = ?1, category_id = NULL WHERE id = ?2 RETURNING *"
@@ -1223,6 +1240,10 @@ impl Service {
 
     pub fn set_transaction_outflow(&self, id: Uuid, amount: Money) -> crate::Result<Transaction> {
         let transaction = self.get_transaction(id)?;
+        if transaction.audited {
+            return Err(Error::new("Cannot edit audited transaction"));
+        }
+
         let connection = self.connection();
         match transaction.transaction_type() {
             // Setting outflow on an income coverts it to an expense
@@ -1255,6 +1276,10 @@ impl Service {
 
     pub fn set_transaction_inflow(&self, id: Uuid, amount: Money) -> crate::Result<Transaction> {
         let transaction = self.get_transaction(id)?;
+        if transaction.audited {
+            return Err(Error::new("Cannot edit audited transaction"));
+        }
+
         let connection = self.connection();
         match transaction.transaction_type() {
             // Setting inflow on an expense converts it into an income.
