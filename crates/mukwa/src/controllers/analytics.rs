@@ -3,7 +3,7 @@
 
 use crate::ui::{self, MainWindow};
 use crate::ui::{AnalyticsApi, PieChartSlice};
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use jiff::civil::Date;
 use mukwa_core::Money;
 use mukwa_core::error::ErrorExt;
@@ -140,7 +140,7 @@ impl AnalyticsController {
             category: Category,
             total: Money,
         }
-        let date = Date::try_from(date).unwrap_or(Zoned::now().date());
+        let date = Date::try_from(date).unwrap_or(ZonedDateTime::now().date());
         let transactions = self.service.fetch_transactions()?;
         let no_expenses = transactions
             .iter()
@@ -449,7 +449,7 @@ mod test {
         AnalyticsController::bind(&app, &service);
 
         let analytics: AnalyticsApi = app.global();
-        analytics.set_current_date(Zoned::now().date().into());
+        analytics.set_current_date(ZonedDateTime::now().date().into());
         let total_spent = analytics.invoke_total_spent();
         assert_eq!(total_spent, Money::new(25).to_shared_string());
         Ok(())

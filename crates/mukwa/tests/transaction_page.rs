@@ -6,7 +6,7 @@ use std::ops::ControlFlow;
 use i_slint_backend_testing::{
     AccessibleRole, ElementHandle, ElementRoot, mock_elapsed_time, send_keyboard_string_sequence,
 };
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use mukwa::Result;
 use mukwa::{
     testing::*,
@@ -372,7 +372,10 @@ fn create_simple_transaction() -> Result<()> {
     let account = account_state.get_accounts().iter().next().unwrap();
     let transactions: Vec<_> = transaction_state.get_transactions().iter().collect();
     assert_eq!(transactions.len(), 1);
-    assert_eq!(transactions[0].date, Zoned::now().date().to_shared_string());
+    assert_eq!(
+        transactions[0].date,
+        ZonedDateTime::now().date().to_shared_string()
+    );
     assert_eq!(transactions[0].amount, Money::ZERO.to_shared_string());
     assert_eq!(transactions[0].account_id, account.id);
     assert!(transactions[0].category_id.is_empty());

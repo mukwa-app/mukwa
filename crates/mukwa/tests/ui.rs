@@ -9,7 +9,7 @@ use mukwa::ui::{
 
 use i_slint_backend_testing::{ElementHandle, ElementRoot};
 use jiff::civil::date;
-use jiff::{ToSpan, Zoned};
+use jiff::{ToSpan, ZonedDateTime};
 use mukwa::{Result, SettingsStore, controllers};
 use mukwa::{init_service, testing::*};
 use mukwa_core::fmt::CurrencyFormatter;
@@ -36,7 +36,7 @@ fn total_spent_all_only_includes_expenses() -> Result<()> {
     let window = MainWindow::new()?;
     controllers::bind_all(&window, &service, &settings)?;
     let account_state = window.global::<ui::AccountState>();
-    let total = account_state.invoke_total_spent_all(Zoned::now().date().into());
+    let total = account_state.invoke_total_spent_all(ZonedDateTime::now().date().into());
     assert_eq!(total, Money::new(700).to_shared_string());
     Ok(())
 }
@@ -84,19 +84,19 @@ fn draw_pie_chart_filters_by_date() -> Result<()> {
     service
         .create_expense()
         .category(category.id)
-        .date(Zoned::now().date() + 1.month())
+        .date(ZonedDateTime::now().date() + 1.month())
         .amount(Money::new(100))
         .submit()?;
     service
         .create_expense()
         .category(category.id)
-        .date(Zoned::now().date())
+        .date(ZonedDateTime::now().date())
         .amount(Money::new(500))
         .submit()?;
     service
         .create_expense()
         .category(category.id)
-        .date(Zoned::now().date() - 1.month())
+        .date(ZonedDateTime::now().date() - 1.month())
         .amount(Money::new(200))
         .submit()?;
 
@@ -104,7 +104,7 @@ fn draw_pie_chart_filters_by_date() -> Result<()> {
     let settings = SettingsStore::open(temp.path().join("settings.toml"))?;
     controllers::bind_all(&window, &service, &settings)?;
     let analytics = window.global::<ui::AnalyticsApi>();
-    let date = Zoned::now().date() - 1.month();
+    let date = ZonedDateTime::now().date() - 1.month();
     let slices = analytics.invoke_draw_pie_chart(500.0, 500.0, date.into());
     let slice = slices.iter().next().unwrap();
 
@@ -144,7 +144,8 @@ fn draw_pie_chart_sorts_categories() -> Result<()> {
     let settings = SettingsStore::open(temp.path().join("settings.toml"))?;
     controllers::bind_all(&window, &service, &settings)?;
     let analytics = window.global::<ui::AnalyticsApi>();
-    let pie_slices = analytics.invoke_draw_pie_chart(500.0, 500.0, Zoned::now().date().into());
+    let pie_slices =
+        analytics.invoke_draw_pie_chart(500.0, 500.0, ZonedDateTime::now().date().into());
     let mut slices = pie_slices.iter();
 
     assert_eq!(slices.len(), 3);

@@ -16,7 +16,7 @@ edition = "2024"
 [workspace.dependencies]
 tracing = "0.1.44"
 tempfile = "3.27.0"
-jiff = { version = "0.2.29", features = ["serde"] }
+jiff = { version = "1.0.0", features = ["serde"] }
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 uuid = { version = "1.23.4", features = ["v7"] }
 rusqlite = { version = "0.40.1", features = ["bundled"] }

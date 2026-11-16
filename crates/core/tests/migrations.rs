@@ -3,7 +3,7 @@
 
 // Tests to make sure the migrations don't break the user's database.
 
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use mukwa_core::service::{AccountType, Service, TransactionKind};
 use mukwa_core::{Error, Money, Result, migrator::Migrator};
 use rusqlite::{Connection, params};
@@ -18,7 +18,7 @@ fn create_expense(service: &Service, note: &str) -> crate::Result<()> {
 
     let account_id = accounts[0].id;
     let amount = Money::new(0);
-    let date = Zoned::now().date();
+    let date = ZonedDateTime::now().date();
     let connection = service.connection();
     let sql = "INSERT INTO transactions(id,transaction_date,sender_id,amount,note) \
             VALUES(?1,?2,?3,?4,?5)";

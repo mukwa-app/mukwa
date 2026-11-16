@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
 use crate::{Error, Money, create_test_db};
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use jiff::civil::Date;
 use rusqlite::{Connection, Row, params};
 use std::collections::HashMap;
@@ -268,7 +268,7 @@ impl<T> TransactionBuilder<T> {
             receiver_id: None,
             category_id: None,
             note: None,
-            date: Zoned::now().date(),
+            date: ZonedDateTime::now().date(),
             marker: PhantomData,
             kind: TransactionKind::Regular,
         }
@@ -668,7 +668,7 @@ impl Service {
         let mut stmt = connection.prepare_cached(sql)?;
         let params = params![
             Uuid::now_v7().to_string(),
-            Zoned::now().date().to_string(),
+            ZonedDateTime::now().date().to_string(),
             account_id.to_string(),
             correction.inner(),
             TransactionKind::Correction as i64
@@ -969,7 +969,7 @@ impl Service {
                 |row| row.get(0),
             )?;
 
-            let date = Zoned::now().date();
+            let date = ZonedDateTime::now().date();
             let sql = "INSERT INTO budgets(id,amount,category_id,month,year) \
             VALUES(?1,?2,?3,?4,?5)";
 
@@ -1036,7 +1036,7 @@ impl Service {
     pub fn create_budget(&self, opts: CreateBudgetOpts) -> crate::Result<Budget> {
         let connection = self.connection();
         let amount = opts.amount.unwrap_or_default().inner();
-        let date = opts.month.unwrap_or(Zoned::now().date());
+        let date = opts.month.unwrap_or(ZonedDateTime::now().date());
 
         let sql = "INSERT INTO budgets(id,amount,category_id,month,year) \
         VALUES(?1,?2,?3,?4,?5) \

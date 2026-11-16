@@ -3,7 +3,7 @@
 
 use crate::Error;
 use crate::error::ErrorExt;
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use rusqlite::Connection;
 use std::fs::File;
 use std::io::Write;
@@ -267,7 +267,7 @@ impl Migrator {
 }
 
 pub fn create_migration_file(dir: impl AsRef<Path>, name: &str) -> crate::Result<PathBuf> {
-    let version = Zoned::now().strftime("%Y%m%d%H%M%S").to_string();
+    let version = ZonedDateTime::now().strftime("%Y%m%d%H%M%S").to_string();
     let file_name = format!("{version}_{name}");
     let mut buffer = String::new();
     buffer += "--migrate:up\n\n";

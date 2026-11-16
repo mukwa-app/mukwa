@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
 use crate::ui;
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use jiff::civil::Date;
 use mukwa_core::fmt::CurrencyFormatter;
 use mukwa_core::{Money, error::ErrorExt};
@@ -81,7 +81,7 @@ pub fn bind(main_window: &ui::MainWindow) {
     api.on_parse_date(|date| {
         let date = Date::strptime("%Y-%m-%d", &date)
             .inspect_err(|err| warn!("{err}"))
-            .unwrap_or(Zoned::now().date());
+            .unwrap_or(ZonedDateTime::now().date());
 
         ui::Date {
             year: date.year() as i32,
@@ -98,7 +98,7 @@ pub fn bind(main_window: &ui::MainWindow) {
             .to_shared_string()
     });
 
-    api.on_today(|| Zoned::now().date().to_shared_string());
+    api.on_today(|| ZonedDateTime::now().date().to_shared_string());
     api.on_money_to_float(|money| {
         Money::from_str(&money)
             .context("Failed to parse Money")
