@@ -46,6 +46,24 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.4.0" date="2026-11-17">
+          <url type="details">https://github.com/snubwoody/mukwa/blob/main/CHANGELOG.md#040---2026-11-17</url>
+          <description>
+              <ul>
+                  <li>Added dark mode.</li>
+                  <li>Money assigned to a budget now carries over into future months.</li>
+                  <li>Budgets now show a negative balance when overspent instead of showing 0.</li>
+                  <li>Added a button to close the budget target sidebar.</li>
+                  <li>
+                    Added a button to audit an account. Auditing an account lets you confirm whether the bank account 
+                    balance matches the account balance in Mukwa. If it does then then the account is audited, if not 
+                    then a correction transaction can be made which will make the two account balances match. Audited 
+                    transactions are hidden so that you don't have to worry about them.
+                  </li>
+                  <li>Fixed a bug where the pie chart was not drawing when there were no transactions in the current month.</li>
+              </ul>
+          </description>
+        </release>
         <release version="0.3.2" date="2026-10-30">
           <url type="details">https://github.com/snubwoody/mukwa/blob/main/CHANGELOG.md#032---2026-10-30</url>
           <description>
