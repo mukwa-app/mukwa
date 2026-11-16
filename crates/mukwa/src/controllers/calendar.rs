@@ -3,14 +3,14 @@
 
 use crate::ui;
 use jiff::civil::Date;
-use jiff::{ToSpan, Zoned};
+use jiff::{ToSpan, ZonedDateTime};
 use slint::{ComponentHandle, ModelRc, VecModel};
 use std::rc::Rc;
 use tracing::warn;
 
 pub fn bind(window: &ui::MainWindow) {
     let calendar_state = window.global::<ui::CalendarState>();
-    calendar_state.on_today(|| Zoned::now().date().into());
+    calendar_state.on_today(|| ZonedDateTime::now().date().into());
 
     calendar_state.on_increment_month(|date| {
         let result = Date::new(date.year as i16, date.month as i8, date.day as i8);
@@ -19,7 +19,7 @@ pub fn bind(window: &ui::MainWindow) {
             return date.into();
         }
 
-        Zoned::now().date().into()
+        ZonedDateTime::now().date().into()
     });
 
     calendar_state.on_increment_week(|date| {
@@ -28,7 +28,7 @@ pub fn bind(window: &ui::MainWindow) {
             return date.into();
         }
 
-        Zoned::now().date().into()
+        ZonedDateTime::now().date().into()
     });
 
     calendar_state.on_increment_day(|date| {
@@ -38,7 +38,7 @@ pub fn bind(window: &ui::MainWindow) {
             return date.into();
         }
 
-        Zoned::now().date().into()
+        ZonedDateTime::now().date().into()
     });
 
     calendar_state.on_decrement_month(|date| {
@@ -48,7 +48,7 @@ pub fn bind(window: &ui::MainWindow) {
             return date.into();
         }
 
-        Zoned::now().date().into()
+        ZonedDateTime::now().date().into()
     });
 
     calendar_state.on_decrement_week(|date| {
@@ -58,7 +58,7 @@ pub fn bind(window: &ui::MainWindow) {
             return date.into();
         }
 
-        Zoned::now().date().into()
+        ZonedDateTime::now().date().into()
     });
 
     calendar_state.on_decrement_day(|date| {
@@ -68,7 +68,7 @@ pub fn bind(window: &ui::MainWindow) {
             return date.into();
         }
 
-        Zoned::now().date().into()
+        ZonedDateTime::now().date().into()
     });
 
     calendar_state.on_days_in_month(|date| {
@@ -142,7 +142,7 @@ mod test {
                 month: 3,
                 year: -24242,
             },
-            Zoned::now().date().into(),
+            ZonedDateTime::now().date().into(),
         );
         Ok(())
     }

@@ -3,7 +3,7 @@
 
 use crate::ui;
 use crate::ui::{CategoryState, MainWindow};
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use jiff::civil::Date;
 use mukwa_core::Money;
 use mukwa_core::error::ErrorExt;
@@ -50,7 +50,7 @@ impl CategoryController {
         let category_options_model = Rc::new(VecModel::from(category_options));
 
         let budgets_list: Vec<ui::Budget> = service
-            .fetch_budgets_by_month(Zoned::now().date())?
+            .fetch_budgets_by_month(ZonedDateTime::now().date())?
             .iter()
             .map(|b| b.into())
             .collect();
@@ -62,7 +62,7 @@ impl CategoryController {
         // We can't map arrays in slint so we have to maintain duplicate arrays for comboboxes
         // see <https://github.com/slint-ui/slint/issues/1328>
         category_state.set_category_options(ModelRc::new(category_options_model));
-        category_state.set_current_month(Zoned::now().date().into());
+        category_state.set_current_month(ZonedDateTime::now().date().into());
 
         category_state.on_edit_budget_target({
             let controller = controller.clone();
@@ -614,7 +614,7 @@ mod test {
 
         let category_state = window.global::<CategoryState>();
         let current_month = category_state.get_current_month();
-        assert_eq!(current_month, Zoned::now().date().into());
+        assert_eq!(current_month, ZonedDateTime::now().date().into());
         Ok(())
     }
 
@@ -754,16 +754,18 @@ mod test {
         service.create_budget(CreateBudgetOpts {
             category_id: category.id,
             amount: Some(Money::new(200)),
-            month: Some(Zoned::now().date()),
+            month: Some(ZonedDateTime::now().date()),
         })?;
         service
             .create_expense()
             .amount(Money::new(500))
-            .date(Zoned::now().date())
+            .date(ZonedDateTime::now().date())
             .category(category.id)
             .submit()?;
-        let total = category_state
-            .invoke_left_to_spend(category.id.to_shared_string(), Zoned::now().date().into());
+        let total = category_state.invoke_left_to_spend(
+            category.id.to_shared_string(),
+            ZonedDateTime::now().date().into(),
+        );
         assert_eq!(total, Money::new(-300).to_shared_string());
         Ok(())
     }

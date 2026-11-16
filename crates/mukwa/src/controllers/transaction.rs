@@ -3,7 +3,7 @@
 
 use crate::ui;
 use crate::ui::{MainWindow, TransactionState};
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use jiff::civil::Date;
 use mukwa_core::error::ErrorExt;
 use mukwa_core::service::{Service, Transaction};
@@ -360,7 +360,7 @@ impl TransactionController {
 
     fn create_transaction(&self, opts: ui::CreateTransactionOpts) -> crate::Result<()> {
         let date = if opts.date.is_empty() {
-            Zoned::now().date()
+            ZonedDateTime::now().date()
         } else {
             Date::strptime("%Y-%m-%d", &opts.date)?
         };
@@ -582,7 +582,7 @@ impl TransactionController {
 #[cfg(test)]
 mod test {
     use super::*;
-    use jiff::Zoned;
+    use jiff::ZonedDateTime;
     use jiff::civil::date;
     use mukwa_core::Money;
     use mukwa_core::service::AccountType;
@@ -771,7 +771,7 @@ mod test {
             account_id: account.id.to_shared_string(),
             outflow: "0.00".to_shared_string(),
             category_id: category.id.to_shared_string(),
-            date: Zoned::now().date().to_shared_string(),
+            date: ZonedDateTime::now().date().to_shared_string(),
             note: SharedString::from("Pick n Pay"),
             ..Default::default()
         };
@@ -781,7 +781,10 @@ mod test {
         let transaction = transaction_state.get_transactions().iter().next().unwrap();
         assert_eq!(transaction.account_id, account.id.to_shared_string());
         assert_eq!(transaction.category_id, category.id.to_shared_string());
-        assert_eq!(transaction.date, Zoned::now().date().to_shared_string());
+        assert_eq!(
+            transaction.date,
+            ZonedDateTime::now().date().to_shared_string()
+        );
         assert_eq!(transaction.note.as_str(), "Pick n Pay");
         assert_eq!(transaction.inflow.as_str(), "");
         assert_eq!(transaction.payee_id.as_str(), "");
@@ -800,7 +803,7 @@ mod test {
         let opts = CreateTransactionOpts {
             account_id: account.id.to_shared_string(),
             inflow: "0.00".to_shared_string(),
-            date: Zoned::now().date().to_shared_string(),
+            date: ZonedDateTime::now().date().to_shared_string(),
             note: SharedString::from("Pick n Pay"),
             ..Default::default()
         };
@@ -808,7 +811,10 @@ mod test {
 
         let transaction = transaction_state.get_transactions().iter().next().unwrap();
         assert_eq!(transaction.account_id, account.id.to_shared_string());
-        assert_eq!(transaction.date, Zoned::now().date().to_shared_string());
+        assert_eq!(
+            transaction.date,
+            ZonedDateTime::now().date().to_shared_string()
+        );
         assert_eq!(transaction.note.as_str(), "Pick n Pay");
         assert_eq!(transaction.outflow.as_str(), "");
         assert_eq!(transaction.payee_id.as_str(), "");
@@ -827,7 +833,7 @@ mod test {
         let opts = CreateTransactionOpts {
             account_id: account.id.to_shared_string(),
             inflow: "0.00".to_shared_string(),
-            date: Zoned::now().date().to_shared_string(),
+            date: ZonedDateTime::now().date().to_shared_string(),
             category_id: SharedString::from("does-not-exist"),
             ..Default::default()
         };
@@ -835,7 +841,10 @@ mod test {
 
         let transaction = transaction_state.get_transactions().iter().next().unwrap();
         assert_eq!(transaction.account_id, account.id.to_shared_string());
-        assert_eq!(transaction.date, Zoned::now().date().to_shared_string());
+        assert_eq!(
+            transaction.date,
+            ZonedDateTime::now().date().to_shared_string()
+        );
         assert!(transaction.category_id.is_empty());
         assert!(transaction.outflow.is_empty());
         assert!(transaction.payee_id.is_empty());
@@ -859,7 +868,10 @@ mod test {
 
         transaction_state.invoke_create_transaction(opts);
         let transaction = transaction_state.get_transactions().iter().next().unwrap();
-        assert_eq!(transaction.date, Zoned::now().date().to_shared_string());
+        assert_eq!(
+            transaction.date,
+            ZonedDateTime::now().date().to_shared_string()
+        );
         Ok(())
     }
 

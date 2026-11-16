@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
 use i_slint_backend_testing::ElementHandle;
-use jiff::{ToSpan, Zoned, civil::date};
+use jiff::{ToSpan, ZonedDateTime, civil::date};
 use mukwa::ui::{
     AnalyticsApi, CategoryState, CreateTransactionOpts, MainWindow, Settings, TransactionState,
 };
@@ -110,7 +110,10 @@ fn sidebar_no_transactions_in_current_month() -> Result<()> {
 fn month_switch() -> Result<()> {
     let (app, _) = setup()?;
     let analytics: AnalyticsApi = app.global();
-    assert_eq!(analytics.get_current_date(), Zoned::now().date().into());
+    assert_eq!(
+        analytics.get_current_date(),
+        ZonedDateTime::now().date().into()
+    );
 
     ElementHandle::find_by_accessible_label(&app, "Analytics")
         .next()
@@ -129,7 +132,7 @@ fn month_switch() -> Result<()> {
         .mock_single_click(PointerEventButton::Left);
     assert_eq!(
         analytics.get_current_date(),
-        Zoned::now().date().saturating_sub(1.month()).into()
+        ZonedDateTime::now().date().saturating_sub(1.month()).into()
     );
 
     month_switch
@@ -138,7 +141,10 @@ fn month_switch() -> Result<()> {
         .find_first()
         .unwrap()
         .mock_single_click(PointerEventButton::Left);
-    assert_eq!(analytics.get_current_date(), Zoned::now().date().into());
+    assert_eq!(
+        analytics.get_current_date(),
+        ZonedDateTime::now().date().into()
+    );
     assert!(
         month_switch
             .query_descendants()
@@ -156,7 +162,7 @@ fn month_switch() -> Result<()> {
 
     assert_eq!(
         analytics.get_current_date(),
-        Zoned::now().date().saturating_add(1.month()).into()
+        ZonedDateTime::now().date().saturating_add(1.month()).into()
     );
 
     analytics.set_current_date(date(2026, 12, 1).into());

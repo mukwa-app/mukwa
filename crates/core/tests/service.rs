@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
 use jiff::civil::{Date, date};
-use jiff::{ToSpan, Zoned};
+use jiff::{ToSpan, ZonedDateTime};
 use mukwa_core::Result;
 use mukwa_core::migrator::Migrator;
 use mukwa_core::service::{
@@ -297,7 +297,7 @@ fn fetch_budgets_by_month() -> mukwa_core::Result<()> {
         ..Default::default()
     })?;
 
-    let budgets = service.fetch_budgets_by_month(Zoned::now().date())?;
+    let budgets = service.fetch_budgets_by_month(ZonedDateTime::now().date())?;
     assert!(budgets.contains(&budget2));
     assert!(!budgets.contains(&budget1));
     Ok(())
@@ -387,7 +387,7 @@ fn total_spent_credit_payments() -> Result<()> {
     service.check_credit_account_categories()?;
     let categories = service.fetch_categories()?;
     let category = &categories[0];
-    let total = service.total_spent(category.id, Zoned::now().date())?;
+    let total = service.total_spent(category.id, ZonedDateTime::now().date())?;
     assert_eq!(total, Money::new(500));
     Ok(())
 }
@@ -403,17 +403,17 @@ fn total_spent_in_group() -> Result<()> {
     service
         .create_expense()
         .amount(Money::new(500))
-        .date(Zoned::now().date())
+        .date(ZonedDateTime::now().date())
         .category(category.id)
         .submit()?;
     service
         .create_expense()
         .category(category.id)
         .amount(Money::new(150))
-        .date(Zoned::now().date())
+        .date(ZonedDateTime::now().date())
         .submit()?;
 
-    let total = service.total_spent_in_group(group.id, Zoned::now().date())?;
+    let total = service.total_spent_in_group(group.id, ZonedDateTime::now().date())?;
     assert_eq!(total, Money::new(650));
     Ok(())
 }
@@ -438,8 +438,8 @@ fn total_assigned_in_group() -> mukwa_core::Result<()> {
         ..Default::default()
     })?;
 
-    let t1 = service.total_assigned_in_group(group.id, Zoned::now().date())?;
-    let t2 = service.total_assigned_in_group(group2.id, Zoned::now().date())?;
+    let t1 = service.total_assigned_in_group(group.id, ZonedDateTime::now().date())?;
+    let t2 = service.total_assigned_in_group(group2.id, ZonedDateTime::now().date())?;
 
     assert_eq!(t1, Money::new(750));
     assert_eq!(t2, Money::ZERO);
@@ -459,10 +459,10 @@ fn total_spent_in_group_only_counts_category_once() -> mukwa_core::Result<()> {
         .create_expense()
         .amount(Money::new(500))
         .category(category.id)
-        .date(Zoned::now().date())
+        .date(ZonedDateTime::now().date())
         .submit()?;
 
-    let total = service.total_spent_in_group(group.id, Zoned::now().date())?;
+    let total = service.total_spent_in_group(group.id, ZonedDateTime::now().date())?;
     assert_eq!(total, Money::new(500));
     Ok(())
 }
@@ -891,7 +891,7 @@ fn fetch_or_init_budgets() -> mukwa_core::Result<()> {
         ..Default::default()
     })?;
 
-    let budgets = service.fetch_or_init_budgets(Zoned::now().date())?;
+    let budgets = service.fetch_or_init_budgets(ZonedDateTime::now().date())?;
 
     assert_eq!(budgets.len(), 3);
     Ok(())
@@ -905,7 +905,7 @@ fn fetch_or_init_budgets_in_different_month() -> mukwa_core::Result<()> {
 
     service.create_budget(CreateBudgetOpts {
         category_id: c1.id,
-        month: Some(Zoned::now().date()),
+        month: Some(ZonedDateTime::now().date()),
         ..Default::default()
     })?;
 
@@ -1238,7 +1238,7 @@ fn credit_income_does_not_affect_available_to_spend() -> Result<()> {
         .amount(Money::new(50))
         .submit()?;
     let categories = service.fetch_categories()?;
-    let available = service.available_to_spend(categories[0].id, Zoned::now().date())?;
+    let available = service.available_to_spend(categories[0].id, ZonedDateTime::now().date())?;
     assert_eq!(available, Money::ZERO);
     Ok(())
 }
@@ -1253,7 +1253,7 @@ fn available_to_spend_credit_categories() -> Result<()> {
         expected: (Date, Money),
     }
 
-    let now = Zoned::now().date();
+    let now = ZonedDateTime::now().date();
     let test_cases = [
         TestCase {
             balance: (now, Money::new(100)),
@@ -1389,7 +1389,7 @@ fn available_to_spend() -> Result<()> {
         TestCase {
             budgets: vec![],
             transactions: vec![],
-            expected: (Zoned::now().date(), Money::ZERO),
+            expected: (ZonedDateTime::now().date(), Money::ZERO),
         },
     ];
 

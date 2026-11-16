@@ -3,7 +3,7 @@
 
 use crate::ui::{self, MainWindow};
 use crate::ui::{AccountState, ComboBoxItem};
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use jiff::civil::Date;
 use mukwa_core::Money;
 use mukwa_core::error::ErrorExt;
@@ -111,7 +111,7 @@ impl AccountController {
             move |month| match service.fetch_transactions() {
                 Ok(transactions) => {
                     let date = Date::new(month.year as i16, month.month as i8, month.day as i8)
-                        .unwrap_or(Zoned::now().date());
+                        .unwrap_or(ZonedDateTime::now().date());
                     let total: Money = transactions
                         .iter()
                         .filter(|t| t.transaction_type() == TransactionType::Expense)

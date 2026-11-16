@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
 use clap::{Parser, Subcommand};
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use mukwa_core::Money;
 use mukwa_core::auto_update::Manifest;
 use mukwa_core::error::ErrorExt;
@@ -56,7 +56,7 @@ impl ServiceFaker {
     fn fill_transactions(&self, service: &Service) -> mukwa_core::Result<()> {
         let accounts = service.fetch_accounts()?;
         let categories = service.fetch_categories()?;
-        let today = Zoned::now().date();
+        let today = ZonedDateTime::now().date();
 
         for _ in 0..fastrand::u16(20..=200) {
             let accounts = fastrand::choose_multiple(&accounts, 2);

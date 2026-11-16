@@ -144,9 +144,9 @@ mod linux_like {
     #[cfg(test)]
     #[test]
     fn test_format_date() {
-        use jiff::Zoned;
+        use jiff::ZonedDateTime;
 
-        let date = Zoned::now().date();
+        let date = ZonedDateTime::now().date();
         let result = format_date(date);
         assert!(result.is_ok());
     }
@@ -154,11 +154,11 @@ mod linux_like {
     #[cfg(test)]
     #[test]
     fn format_date_invalid_locale_fallback() {
-        use jiff::Zoned;
+        use jiff::ZonedDateTime;
         unsafe {
             std::env::set_var("LC_TIME", "invalid-locale");
         }
-        let date = Zoned::now().date();
+        let date = ZonedDateTime::now().date();
         let result = format_date(date);
         assert_eq!(result.unwrap(), date.strftime("%d/%m/%Y").to_string());
     }

@@ -3,7 +3,7 @@
 
 use i_slint_backend_testing::{ElementHandle, ElementRoot};
 use jiff::civil::Date;
-use jiff::{ToSpan, Zoned};
+use jiff::{ToSpan, ZonedDateTime};
 use mukwa::testing::{self, find_by_accessible_label, find_by_type_name};
 use mukwa::ui::{CategoryState, MainWindow, Settings};
 use mukwa::{SettingsStore, controllers};
@@ -709,7 +709,7 @@ fn category_helper_text() -> Result<()> {
             assert_eq!(helper_text.accessible_label().unwrap(), text);
         };
 
-    let now = Zoned::now().date();
+    let now = ZonedDateTime::now().date();
     run_test(
         &[(now, Money::new(100))],
         &[(now, Money::new(100))],
@@ -801,7 +801,7 @@ fn category_left_to_spend() -> Result<()> {
             );
         };
 
-    let now = Zoned::now().date();
+    let now = ZonedDateTime::now().date();
     run_test(
         &[(now, Money::new(100))],
         &[(now, Money::new(100))],
@@ -900,7 +900,7 @@ fn category_progress_bar() -> Result<()> {
             );
         };
 
-    let now = Zoned::now().date();
+    let now = ZonedDateTime::now().date();
     run_test(
         &[(now, Money::new(100))],
         &[(now, Money::new(100))],
