@@ -266,6 +266,18 @@ impl TransactionController {
             }
         });
 
+        transaction_state.on_unlock_all_transactions({
+            let controller = controller.clone();
+            move |id| {
+                if let Err(err) = controller
+                    .unlock_all_transactions(&id)
+                    .context("Failed to unlock transactions")
+                {
+                    warn!("{}", err.report());
+                }
+            }
+        });
+
         transaction_state.on_load_transactions({
             let controller = controller.clone();
             move || {
@@ -556,6 +568,13 @@ impl TransactionController {
         let category_id = Uuid::parse_str(category_id).context("Failed to parse category id")?;
         let transaction = self.service.set_transaction_category(id, category_id)?;
         self.replace_transaction(transaction);
+        Ok(())
+    }
+
+    fn unlock_all_transactions(&self, id: &str) -> crate::Result<()> {
+        let id = Uuid::parse_str(id).context("Failed to parse transaction id")?;
+        self.service.unlock_all_transactions(id)?;
+        self.load_transactions()?;
         Ok(())
     }
 }

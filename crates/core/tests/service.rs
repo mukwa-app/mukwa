@@ -1501,6 +1501,29 @@ fn audit_account() -> Result<()> {
 }
 
 #[test]
+fn unlock_all_transactions() -> Result<()> {
+    let service = Service::open_in_memory()?;
+    let account = service.create_account("", AccountType::Cash)?;
+    let account2 = service.create_account("", AccountType::Cash)?;
+    service.create_expense().account(account.id).submit()?;
+    service.create_income().account(account.id).submit()?;
+    service
+        .create_transfer()
+        .accounts(account.id, account2.id)
+        .submit()?;
+
+    service.audit_account(account.id)?;
+    for transaction in service.fetch_transactions()? {
+        assert!(transaction.audited);
+    }
+    service.unlock_all_transactions(account.id)?;
+    for transaction in service.fetch_transactions()? {
+        assert!(!transaction.audited);
+    }
+    Ok(())
+}
+
+#[test]
 fn audit_account_does_not_affect_other_accounts() -> Result<()> {
     let service = Service::open_in_memory()?;
     let account = service.create_account("", AccountType::Cash)?;
@@ -1518,6 +1541,29 @@ fn audit_account_does_not_affect_other_accounts() -> Result<()> {
     let t2 = service.get_transaction(t2.id)?;
     assert!(t1.audited);
     assert!(!t2.audited);
+    Ok(())
+}
+
+#[test]
+fn unlock_all_transactions_does_not_affect_other_accounts() -> Result<()> {
+    let service = Service::open_in_memory()?;
+    let account = service.create_account("", AccountType::Cash)?;
+    let account2 = service.create_account("", AccountType::Cash)?;
+    service.create_expense().account(account.id).submit()?;
+    service.create_income().account(account.id).submit()?;
+    let t1 = service
+        .create_transfer()
+        .accounts(account.id, account2.id)
+        .submit()?;
+    let t2 = service.create_expense().account(account2.id).submit()?;
+    service.audit_account(account.id)?;
+    service.audit_account(account2.id)?;
+    service.unlock_all_transactions(account.id)?;
+
+    let t1 = service.get_transaction(t1.id)?;
+    let t2 = service.get_transaction(t2.id)?;
+    assert!(!t1.audited);
+    assert!(t2.audited);
     Ok(())
 }
 

@@ -792,7 +792,7 @@ impl Service {
         Ok(total)
     }
 
-    /// Sets the `is_audited` field of all the account's transactions to true.
+    /// Sets the `is_audited` field of all the account's transactions to `true`.
     pub fn audit_account(&self, account_id: Uuid) -> crate::Result<()> {
         let sql =
             "UPDATE transactions SET is_audited = TRUE WHERE sender_id = ?1 OR receiver_id = ?1";
@@ -807,6 +807,15 @@ impl Service {
         for id in ids {
             self.confirm_transaction(id)?;
         }
+        Ok(())
+    }
+
+    /// Sets the `is_audited` field of all the account's transactions to `false`.
+    pub fn unlock_all_transactions(&self, account_id: Uuid) -> crate::Result<()> {
+        let sql =
+            "UPDATE transactions SET is_audited = FALSE WHERE sender_id = ?1 OR receiver_id = ?1";
+        let connection = self.connection();
+        connection.execute(sql, [account_id.to_string()])?;
         Ok(())
     }
 

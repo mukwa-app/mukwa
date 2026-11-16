@@ -105,6 +105,7 @@ export global TransactionState {
 
     callback search(string);
     callback audit-account(string);
+    callback unlock-all-transactions(account-id: string);
     callback clear-search();
     callback select-transaction(id: string);
     callback delete-transaction(id: string);
