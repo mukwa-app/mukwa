@@ -1646,3 +1646,23 @@ fn cant_edit_audited_transaction() -> crate::Result<()> {
     assert_eq!(transaction, transactions[0]);
     Ok(())
 }
+
+#[test]
+fn confirm_audited_transactions() -> crate::Result<()> {
+    let service = Service::open_in_memory()?;
+
+    let account = service.create_account("", AccountType::Cash)?;
+    let account2 = service.create_account("", AccountType::Cash)?;
+
+    let transaction = service.create_expense().account(account.id).submit()?;
+    let transaction2 = service.create_expense().account(account2.id).submit()?;
+
+    service.mark_as_unconfirmed(transaction.id)?;
+    service.mark_as_unconfirmed(transaction2.id)?;
+    service.audit_account(account.id)?;
+
+    let ids = service.fetch_unconfirmed_transactions()?;
+    assert_eq!(ids.len(), 1);
+    assert_eq!(transaction2.id, ids[0]);
+    Ok(())
+}

@@ -798,6 +798,15 @@ impl Service {
             "UPDATE transactions SET is_audited = TRUE WHERE sender_id = ?1 OR receiver_id = ?1";
         let connection = self.connection();
         connection.execute(sql, [account_id.to_string()])?;
+        let transactions = self.fetch_transactions()?;
+        let ids = transactions
+            .iter()
+            .filter(|t| t.receiver_id == Some(account_id) || t.sender_id == Some(account_id))
+            .map(|t| t.id);
+
+        for id in ids {
+            self.confirm_transaction(id)?;
+        }
         Ok(())
     }
 
