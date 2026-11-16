@@ -1,18 +1,30 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
-use crate::ui::{AnalyticsApi, CategoryState, CreateTransactionOpts, Settings, TransactionState};
 use i_slint_backend_testing::ElementHandle;
 use jiff::{ToSpan, Zoned, civil::date};
-use mukwa_core::service::TransactionKind;
+use mukwa::ui::{
+    AnalyticsApi, CategoryState, CreateTransactionOpts, MainWindow, Settings, TransactionState,
+};
+use mukwa_core::create_test_db;
+use mukwa_core::service::{Service, TransactionKind};
 use mukwa_core::{Currency, Money, fmt::CurrencyFormatter, service::AccountType};
 use slint::{ComponentHandle, Model, SharedString, ToSharedString, platform::PointerEventButton};
 
-use super::Result;
+use mukwa::{Result, SettingsStore, controllers};
+
+pub fn setup() -> crate::Result<(MainWindow, Service)> {
+    i_slint_backend_testing::init_no_event_loop();
+    let service = Service::new(create_test_db());
+    let app = MainWindow::new()?;
+    let settings = SettingsStore::open_in_memory();
+    controllers::bind_all(&app, &service, &settings)?;
+    Ok((app, service))
+}
 
 #[test]
 fn page_title() -> Result<()> {
-    let (app, _) = super::setup()?;
+    let (app, _) = setup()?;
     ElementHandle::find_by_accessible_label(&app, "Analytics")
         .next()
         .unwrap()
@@ -29,7 +41,7 @@ fn page_title() -> Result<()> {
 
 #[test]
 fn sidebar_title() -> Result<()> {
-    let (app, _) = super::setup()?;
+    let (app, _) = setup()?;
     ElementHandle::find_by_accessible_label(&app, "Analytics")
         .next()
         .unwrap()
@@ -57,7 +69,7 @@ fn sidebar_title() -> Result<()> {
 
 #[test]
 fn sidebar_no_transactions_in_current_month() -> Result<()> {
-    let (app, service) = super::setup()?;
+    let (app, service) = setup()?;
     service.create_account("", AccountType::Cash)?;
     let group = service.create_category_group("")?;
     let c1 = service.create_category("Rent", group.id)?;
@@ -96,7 +108,7 @@ fn sidebar_no_transactions_in_current_month() -> Result<()> {
 
 #[test]
 fn month_switch() -> Result<()> {
-    let (app, _) = super::setup()?;
+    let (app, _) = setup()?;
     let analytics: AnalyticsApi = app.global();
     assert_eq!(analytics.get_current_date(), Zoned::now().date().into());
 
@@ -177,7 +189,7 @@ fn month_switch() -> Result<()> {
 
 #[test]
 fn total_spent_excludes_starting_balance() -> Result<()> {
-    let (app, service) = super::setup()?;
+    let (app, service) = setup()?;
     let settings: Settings = app.global();
     settings.set_currency_code("USD".to_shared_string());
     service.create_account("", AccountType::Cash)?;
@@ -229,7 +241,7 @@ fn total_spent_excludes_starting_balance() -> Result<()> {
 
 #[test]
 fn total_spent_updates_with_category_filter() -> Result<()> {
-    let (app, service) = super::setup()?;
+    let (app, service) = setup()?;
     let category_state: CategoryState = app.global();
     let transaction_state: TransactionState = app.global();
     let settings: Settings = app.global();
@@ -302,7 +314,7 @@ fn total_spent_updates_with_category_filter() -> Result<()> {
 
 #[test]
 fn categories_shown_in_sidebar() -> Result<()> {
-    let (app, service) = super::setup()?;
+    let (app, service) = setup()?;
     let category_state: CategoryState = app.global();
     let transaction_state: TransactionState = app.global();
     let settings: Settings = app.global();
@@ -416,7 +428,7 @@ fn categories_shown_in_sidebar() -> Result<()> {
 
 #[test]
 fn less_than_one_percent_label() -> Result<()> {
-    let (app, service) = super::setup()?;
+    let (app, service) = setup()?;
     let category_state: CategoryState = app.global();
     let transaction_state: TransactionState = app.global();
     let settings: Settings = app.global();
@@ -473,7 +485,7 @@ fn less_than_one_percent_label() -> Result<()> {
 
 #[test]
 fn category_filter_helper_text() -> Result<()> {
-    let (app, service) = super::setup()?;
+    let (app, service) = setup()?;
     let category_state: CategoryState = app.global();
     service.create_account("", AccountType::Cash)?;
     let group = service.create_category_group("")?;
