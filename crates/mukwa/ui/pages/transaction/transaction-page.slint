@@ -89,7 +89,13 @@ component DateCell inherits TableCell {
             transaction: transaction;
         }
 
-        if !is-unconfirmed: Rectangle {
+        if transaction.audited: Icon {
+            icon: Icons.lock;
+            stroke: Colors.textMuted;
+            stroke-width: 1.6px;
+        }
+
+        if !is-unconfirmed && !transaction.audited: Rectangle {
             width: 20px;
             height: 20px;
         }
