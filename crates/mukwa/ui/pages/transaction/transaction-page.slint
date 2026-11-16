@@ -961,6 +961,56 @@ component TransactionTable inherits Table {
     }
 }
 
+component ToolBar inherits HorizontalLayout {
+    in property <string> active-account-id;
+    callback create-transaction();
+    callback import-csv();
+
+    cross-axis-alignment: center;
+    padding-left: 4px;
+    padding-right: 16px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+
+    HorizontalLayout {
+        alignment: start;
+
+        if TransactionState.selected-transactions.length > 0 || TransactionState.all-transactions-selected: PrimaryButton {
+            text: @tr("Delete");
+            theme: ghost;
+            clicked => {
+                TransactionState.delete-selected-transactions();
+                AccountState.load-accounts();
+            }
+
+            Icon {
+                icon: Icons.trash;
+                stroke: Colors.textBody;
+            }
+        }
+    }
+
+    HorizontalLayout {
+        cross-axis-alignment: center;
+        spacing: 8px;
+        alignment: end;
+        if !active-account-id.is-empty: IconButton {
+            icon: Icons.file-down;
+            theme: ghost;
+            accessible-label: @tr("Import CSV file");
+            clicked => import-csv();
+        }
+    }
+
+    Search { }
+
+    PrimaryButton {
+        text: @tr("New");
+        clicked => create-transaction();
+    }
+}
+
+
 export component TransactionPage inherits VerticalLayout {
     in property <[Transaction]> transactions;
     in property <string> active-account-id;
@@ -1004,53 +1054,14 @@ export component TransactionPage inherits VerticalLayout {
         account-id: active-account-id;
     }
 
-    HorizontalLayout {
-        cross-axis-alignment: center;
-        padding-left: 4px;
-        padding-right: 16px;
-        padding-top: 8px;
-        padding-bottom: 8px;
-
-        HorizontalLayout {
-            alignment: start;
-
-            if TransactionState.selected-transactions.length > 0 || TransactionState.all-transactions-selected: PrimaryButton {
-                text: @tr("Delete");
-                theme: ghost;
-                clicked => {
-                    TransactionState.delete-selected-transactions();
-                    AccountState.load-accounts();
-                }
-
-                Icon {
-                    icon: Icons.trash;
-                    stroke: Colors.textBody;
-                }
-            }
+    ToolBar {
+        active-account-id: active-account-id;
+        import-csv => {
+            csv-data = ImportCsvState.open-csv();
+            import-csv-dialog.show();
         }
-
-        HorizontalLayout {
-            cross-axis-alignment: center;
-            spacing: 8px;
-            alignment: end;
-            if !active-account-id.is-empty: IconButton {
-                icon: Icons.file-down;
-                theme: ghost;
-                accessible-label: @tr("Import CSV file");
-                clicked => {
-                    csv-data = ImportCsvState.open-csv();
-                    import-csv-dialog.show();
-                }
-            }
-
-            Search { }
-
-            PrimaryButton {
-                text: @tr("New");
-                clicked => {
-                    new-transaction-active = true;
-                }
-            }
+        create-transaction => {
+            new-transaction-active = true;
         }
     }
 
