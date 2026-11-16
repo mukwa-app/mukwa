@@ -1057,6 +1057,90 @@ fn hide_audited_transactions() -> Result<()> {
 }
 
 #[test]
+fn unlock_transaction() -> Result<()> {
+    let (app, service) = setup()?;
+
+    let transaction_state: TransactionState = app.global();
+    let account_state: AccountState = app.global();
+    let credit = service.create_account("Credit card", AccountType::Credit)?;
+
+    service.create_expense().account(credit.id).submit()?;
+    service.audit_account(credit.id)?;
+    service.create_expense().account(credit.id).submit()?;
+
+    transaction_state.invoke_load_transactions();
+    account_state.invoke_load_accounts();
+
+    let root_element = app.root_element();
+    root_element.find_by_accessible_label("Credit card").click();
+    root_element.find_by_type_name("Checkbox").click();
+
+    assert_eq!(
+        root_element.find_all_by_type_name("TransactionRow").len(),
+        1
+    );
+    root_element.find_by_accessible_label("Unlock").click();
+    assert_eq!(
+        root_element.find_all_by_type_name("TransactionRow").len(),
+        2
+    );
+
+    for t in transaction_state.get_all_transactions().iter() {
+        assert!(!t.audited);
+    }
+    Ok(())
+}
+
+#[test]
+fn unlock_button_visibility() -> Result<()> {
+    let (app, service) = setup()?;
+
+    let transaction_state: TransactionState = app.global();
+    let account_state: AccountState = app.global();
+    let cash = service.create_account("Cash", AccountType::Cash)?;
+    let credit = service.create_account("Credit card", AccountType::Credit)?;
+
+    service.create_expense().account(credit.id).submit()?;
+    service.audit_account(credit.id)?;
+    service.create_expense().account(credit.id).submit()?;
+    service.create_expense().account(cash.id).submit()?;
+
+    transaction_state.invoke_load_transactions();
+    account_state.invoke_load_accounts();
+
+    let root_element = app.root_element();
+    root_element.find_by_accessible_label("Cash").click();
+    root_element.find_by_type_name("Checkbox").click();
+
+    assert!(
+        root_element
+            .query_descendants()
+            .match_accessible_label("Unlock")
+            .find_first()
+            .is_none(),
+    );
+    root_element.find_by_type_name("Checkbox").click();
+    root_element.find_by_accessible_label("Credit card").click();
+    root_element.find_by_type_name("Checkbox").click();
+    assert!(
+        root_element
+            .query_descendants()
+            .match_accessible_label("Unlock")
+            .find_first()
+            .is_some(),
+    );
+    root_element.find_by_type_name("Checkbox").click();
+    assert!(
+        root_element
+            .query_descendants()
+            .match_accessible_label("Unlock")
+            .find_first()
+            .is_none(),
+    );
+    Ok(())
+}
+
+#[test]
 fn audit_account_create_correction() -> Result<()> {
     let (app, service) = setup()?;
     let settings: Settings = app.global();
