@@ -91,7 +91,6 @@ component BudgetTarget inherits Rectangle {
     property <bool> is-editing: false;
     property <bool> has-target: CategoryState.has-budget-target(category.id);
     property <string> target: CategoryState.get-budget-target(category.id);
-    //background: white;
     border-radius: 12px;
     callback assigned();
 
