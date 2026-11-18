@@ -3,6 +3,7 @@
 
 pub mod controllers;
 mod settings;
+#[cfg(feature = "testing")]
 pub mod testing;
 pub mod ui;
 
