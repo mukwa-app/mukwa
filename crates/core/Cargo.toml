@@ -29,5 +29,6 @@ windows-sys = { version = "0.61.2", features = ["Win32_Globalization"] }
 
 [dev-dependencies]
 image.workspace = true
+proptest = { version = "1.12.0", features = ["attr-macro"] }
 rstest = "0.28.0"
 tempfile.workspace = true
