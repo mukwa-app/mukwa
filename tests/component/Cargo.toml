@@ -5,25 +5,14 @@ edition.workspace = true
 
 [dependencies]
 tracing.workspace = true
+i-slint-core.workspace = true
 
 [dev-dependencies]
 smol = "2.0.2"
 slint.workspace = true
 tracing-subscriber.workspace = true
-
-[dev-dependencies.i-slint-backend-testing]
-git = "https://github.com/snubwoody/slint.git"
-branch = "mukwa"
-features = ["internal"]
-
-[dependencies.i-slint-core]
-git = "https://github.com/snubwoody/slint.git"
-branch = "mukwa"
+i-slint-backend-testing.workspace = true
 
 [build-dependencies]
 smol = "2.0.2"
-
-[build-dependencies.i-slint-compiler]
-git = "https://github.com/snubwoody/slint.git"
-branch = "mukwa"
-features = ["rust", "display-diagnostics"]
+i-slint-compiler.workspace = true
