@@ -64,6 +64,7 @@ component ScrollBar {
 
 export component ScrollView {
     in-out property <length> content-height <=> flickable.content-height;
+    in-out property <color> scrollbar-thumb-color: Colors.surface2;
     preferred-width: 100%;
     preferred-height: 100%;
 
@@ -80,7 +81,7 @@ export component ScrollView {
     scollbar := ScrollBar {
         x: flickable.x + flickable.width;
         y: flickable.y;
-        thumb-color: Colors.surface2;
+        thumb-color: scrollbar-thumb-color;
         height: flickable.height;
         maximum: flickable.content-height - flickable.height;
         page-size: flickable.height;
