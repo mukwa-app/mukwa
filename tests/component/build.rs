@@ -42,7 +42,7 @@ struct TestCase {
 
 fn main() {
     unsafe {
-        std::env::set_var("SLINT_ENABLE_EXPERIMENTAL_FEATURES", "1");
+        std::env::set_var("SLINT_ENABLE_EXPERIMENTAL_FEATURES", "closures");
     }
 
     println!("cargo:rerun-if-changed=../../crates/mukwa/ui");
