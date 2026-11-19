@@ -34,9 +34,7 @@ smol = "2.0.2"
 sha2 = "0.11.1"
 
 [dependencies.i-slint-backend-testing]
-git = "https://github.com/snubwoody/slint.git"
-branch = "mukwa"
-features = ["internal"]
+workspace = true
 optional = true
 
 [dev-dependencies]
@@ -44,7 +42,7 @@ tempfile.workspace = true
 httpmock = "0.8.3"
 
 [build-dependencies]
-slint-build = { git = "https://github.com/snubwoody/slint.git", branch = "mukwa" }
+slint-build.workspace = true
 
 [target.'cfg(target_os = "windows")'.build-dependencies]
 winresource = "0.1.31"
