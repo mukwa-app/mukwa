@@ -24,7 +24,7 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Action {
     CreateTransaction(CreateTransaction),
     CreateAccount(CreateAccount),
@@ -36,7 +36,7 @@ enum Action {
 /// - Randomly pick the account.
 /// - Enter a random amount in the outflow textfield.
 /// - Click the "Save" button and submit the form.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct CreateTransaction;
 
 impl CreateTransaction {
@@ -199,7 +199,7 @@ impl CreateTransaction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct EditOutflow;
 
 impl EditOutflow {
@@ -245,7 +245,7 @@ impl EditOutflow {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct CreateAccount;
 
 impl CreateAccount {
@@ -291,6 +291,33 @@ impl CreateAccount {
     }
 }
 
+struct ActionList(Vec<Action>);
+
+impl ActionList {
+    fn new<const N: usize>(actions: [Action; N]) -> ActionList {
+        Self(actions.to_vec())
+    }
+
+    /// Chooses a random `Action` from the list.
+    fn choose(&self, rng: &mut Rng) -> &Action {
+        rng.choice(&self.0).unwrap()
+    }
+
+    /// Returns a random subset of actions.
+    fn subset(self, rng: &mut Rng) -> Self {
+        let len = rng.usize(1..=self.len());
+        ActionList(rng.choose_multiple(self.0, len))
+    }
+
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    fn shrink(&self) -> Box<dyn Iterator<Item = Action>> {
+        Box::new(self.0.clone().into_iter())
+    }
+}
+
 pub struct TestRunner {
     rng: Rng,
     app: MainWindow,
@@ -325,21 +352,18 @@ impl TestRunner {
         );
         state.invoke_load_accounts();
 
-        let all_actions = [
+        let actions = ActionList::new([
             Action::CreateAccount(CreateAccount),
             Action::EditOutflow(EditOutflow),
             Action::CreateTransaction(CreateTransaction),
-        ];
-
-        // Pick a random set of actions to run
-        let len = self.rng.usize(1..=all_actions.len());
-        let actions = self.rng.choose_multiple(all_actions, len);
+        ])
+        .subset(&mut self.rng); // Pick a random set of actions to run
 
         for run in 1..=3 {
             self.current_run = run;
 
             for i in 0..self.rng.u8(1..=10) {
-                let action = self.rng.choice(&actions).unwrap();
+                let action = actions.choose(&mut self.rng);
                 match action {
                     Action::CreateTransaction(act) => act.execute(&self.app, &mut self.rng),
                     Action::EditOutflow(act) => act.execute(&self.app, &mut self.rng),
