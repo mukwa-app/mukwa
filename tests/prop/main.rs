@@ -17,6 +17,7 @@ use slint::{
     platform::{Key, PointerEventButton},
 };
 use std::fmt::Debug;
+use std::panic;
 use std::{fs, path::PathBuf};
 use tracing::{info, span, trace, trace_span};
 use tracing_subscriber::EnvFilter;
@@ -288,6 +289,7 @@ impl CreateAccount {
         let account = &accounts[accounts.len() - 1];
         assert_eq!(account.balance, balance.to_shared_string());
         assert_eq!(account.name, name);
+        panic!();
     }
 }
 
@@ -340,8 +342,9 @@ impl TestRunner {
         }
     }
 
+    fn step(&mut self) {}
+
     fn run(&mut self) -> mukwa::Result<()> {
-        // TODO: use drop guard instead
         let state: AccountState = self.app.global();
         // TODO: account options has len of 7 every time?
         // TODO: don't create default accounts
@@ -361,6 +364,7 @@ impl TestRunner {
 
         for run in 1..=3 {
             self.current_run = run;
+            step(&actions.0, &mut self.rng, &self.app);
 
             for i in 0..self.rng.u8(1..=10) {
                 let action = actions.choose(&mut self.rng);
@@ -375,6 +379,37 @@ impl TestRunner {
         self.succeeded = true;
         Ok(())
     }
+}
+
+fn run(seed: u64) {
+    let result = panic::catch_unwind(|| {
+        let mut runner = TestRunner::new(seed);
+        runner.run().unwrap();
+    })
+    .map_err(|err| {
+        // Extract common types of panic payload:
+        // panic and assert produce &str or String
+        if let Some(&s) = err.downcast_ref::<&str>() {
+            s.to_owned()
+        } else if let Some(s) = err.downcast_ref::<String>() {
+            s.to_owned()
+        } else {
+            "UNABLE TO SHOW RESULT OF PANIC.".to_owned()
+        }
+    });
+    // dbg!(result);
+}
+
+fn step(actions: &[Action], rng: &mut Rng, app: &MainWindow) -> mukwa::Result<()> {
+    // TODO: maybe i pass all the values and then run
+    for i in 0..rng.u8(1..=10) {
+        match &actions[rng.usize(0..actions.len())] {
+            Action::CreateTransaction(act) => act.execute(app, rng),
+            Action::EditOutflow(act) => act.execute(app, rng),
+            Action::CreateAccount(act) => act.execute(app, rng),
+        }
+    }
+    Ok(())
 }
 
 impl Drop for TestRunner {
@@ -441,8 +476,9 @@ fn main() -> mukwa_core::Result<()> {
     println!("To re-run this test use the command:");
     println!("cargo run --bin simulacrum -- --seed {seed}");
 
-    let mut runner = TestRunner::new(seed);
-    runner.run()?;
+    // let mut runner = TestRunner::new(seed);
+    // runner.run()?;
+    run(seed);
     println!("No errors found");
     Ok(())
 }
