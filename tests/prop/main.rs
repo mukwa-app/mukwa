@@ -7,9 +7,10 @@
 use clap::Parser;
 use fastrand::Rng;
 use i_slint_backend_testing::{AccessibleRole, ElementHandle, ElementRoot};
-use mukwa::testing::*;
 use mukwa::ui::{self, MainWindow, TransactionState};
 use mukwa::ui::{AccountState, Settings};
+use mukwa::{SettingsStore, controllers, testing::*};
+use mukwa_core::create_test_db;
 use mukwa_core::service::Service;
 use mukwa_core::{Currency, Money, fmt::CurrencyFormatter};
 use slint::{
@@ -17,6 +18,7 @@ use slint::{
     platform::{Key, PointerEventButton},
 };
 use std::fmt::Debug;
+use std::panic;
 use std::{fs, path::PathBuf};
 use tracing::{info, span, trace, trace_span};
 use tracing_subscriber::EnvFilter;
@@ -24,7 +26,7 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Action {
     CreateTransaction(CreateTransaction),
     CreateAccount(CreateAccount),
@@ -36,7 +38,7 @@ enum Action {
 /// - Randomly pick the account.
 /// - Enter a random amount in the outflow textfield.
 /// - Click the "Save" button and submit the form.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct CreateTransaction;
 
 impl CreateTransaction {
@@ -199,7 +201,7 @@ impl CreateTransaction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct EditOutflow;
 
 impl EditOutflow {
@@ -245,7 +247,7 @@ impl EditOutflow {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct CreateAccount;
 
 impl CreateAccount {
@@ -298,11 +300,16 @@ pub struct TestRunner {
     succeeded: bool,
     current_run: u64,
     seed: u64,
+    actions: Vec<Action>,
 }
 
 impl TestRunner {
-    fn new(seed: u64) -> TestRunner {
-        let (app, service) = setup().unwrap();
+    fn new(seed: u64, actions: Vec<Action>) -> TestRunner {
+        let service = Service::new(create_test_db());
+        let app = MainWindow::new().unwrap();
+        let settings = SettingsStore::open_in_memory();
+        controllers::bind_all(&app, &service, &settings).unwrap();
+
         TestRunner {
             rng: Rng::with_seed(seed),
             app,
@@ -310,14 +317,24 @@ impl TestRunner {
             succeeded: false,
             current_run: 0,
             seed,
+            actions,
+        }
+    }
+
+    fn step(&mut self) {
+        // TODO: maybe i pass all the values and then run
+        let rng = &mut self.rng;
+        for i in 0..rng.u8(1..=10) {
+            match &self.actions[rng.usize(0..self.actions.len())] {
+                Action::CreateTransaction(act) => act.execute(&self.app, rng),
+                Action::EditOutflow(act) => act.execute(&self.app, rng),
+                Action::CreateAccount(act) => act.execute(&self.app, rng),
+            }
         }
     }
 
     fn run(&mut self) -> mukwa::Result<()> {
-        // TODO: use drop guard instead
         let state: AccountState = self.app.global();
-        // TODO: account options has len of 7 every time?
-        // TODO: don't create default accounts
         state.invoke_create_account(
             "My account".to_shared_string(),
             ui::AccountType::Cash,
@@ -325,27 +342,9 @@ impl TestRunner {
         );
         state.invoke_load_accounts();
 
-        let all_actions = [
-            Action::CreateAccount(CreateAccount),
-            Action::EditOutflow(EditOutflow),
-            Action::CreateTransaction(CreateTransaction),
-        ];
-
-        // Pick a random set of actions to run
-        let len = self.rng.usize(1..=all_actions.len());
-        let actions = self.rng.choose_multiple(all_actions, len);
-
         for run in 1..=3 {
             self.current_run = run;
-
-            for i in 0..self.rng.u8(1..=10) {
-                let action = self.rng.choice(&actions).unwrap();
-                match action {
-                    Action::CreateTransaction(act) => act.execute(&self.app, &mut self.rng),
-                    Action::EditOutflow(act) => act.execute(&self.app, &mut self.rng),
-                    Action::CreateAccount(act) => act.execute(&self.app, &mut self.rng),
-                }
-            }
+            self.step();
         }
 
         self.succeeded = true;
@@ -398,6 +397,45 @@ fn gen_string(rng: &mut Rng) -> String {
     String::from_utf8(result).unwrap()
 }
 
+fn run(seed: u64) {
+    let mut rng = Rng::with_seed(seed);
+    let actions = [
+        Action::CreateAccount(CreateAccount),
+        Action::EditOutflow(EditOutflow),
+        Action::CreateTransaction(CreateTransaction),
+    ];
+
+    // Pick a random subset of actions
+    let len = rng.usize(1..=actions.len());
+    let mut actions = rng.choose_multiple(actions, len);
+
+    let result = panic::catch_unwind(|| {
+        let mut runner = TestRunner::new(seed, actions.clone());
+        runner.run().unwrap();
+    });
+
+    if result.is_ok() {
+        println!("No errors found");
+        return;
+    }
+
+    while actions.len() > 1 {
+        let mut new_actions = actions.clone();
+        new_actions.pop();
+        let result = panic::catch_unwind(|| {
+            let mut runner = TestRunner::new(seed, new_actions.clone());
+            runner.run().unwrap();
+        });
+
+        if result.is_ok() {
+            break;
+        }
+        actions = new_actions;
+    }
+
+    println!("The failing set of actions is {:?}", actions);
+}
+
 fn main() -> mukwa_core::Result<()> {
     let cli = Cli::parse();
     let seed = cli.seed.unwrap_or(fastrand::u64(..));
@@ -417,8 +455,7 @@ fn main() -> mukwa_core::Result<()> {
     println!("To re-run this test use the command:");
     println!("cargo run --bin simulacrum -- --seed {seed}");
 
-    let mut runner = TestRunner::new(seed);
-    runner.run()?;
-    println!("No errors found");
+    i_slint_backend_testing::init_no_event_loop();
+    run(seed);
     Ok(())
 }
