@@ -6,7 +6,9 @@
 #![allow(unused)]
 use clap::Parser;
 use fastrand::Rng;
-use i_slint_backend_testing::{AccessibleRole, ElementHandle, ElementRoot};
+use i_slint_backend_testing::{
+    AccessibleRole, ElementHandle, ElementRoot, send_key_combo, send_keyboard_string_sequence,
+};
 use mukwa::ui::{self, MainWindow, TransactionState};
 use mukwa::ui::{AccountState, Settings};
 use mukwa::{SettingsStore, controllers, testing::*};
@@ -20,7 +22,7 @@ use slint::{
 use std::fmt::Debug;
 use std::panic;
 use std::{fs, path::PathBuf};
-use tracing::{info, span, trace, trace_span};
+use tracing::{debug, info, span, trace, trace_span};
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -31,6 +33,7 @@ enum Action {
     CreateTransaction(CreateTransaction),
     CreateAccount(CreateAccount),
     EditOutflow(EditOutflow),
+    EditNote(EditNote),
 }
 
 /// Creates a transaction and verifies its creating using the following steps:
@@ -202,6 +205,45 @@ impl CreateTransaction {
 }
 
 #[derive(Debug, Clone)]
+struct EditNote;
+
+impl EditNote {
+    fn execute(&self, app: &MainWindow, rng: &mut Rng) {
+        let _span = trace_span!("EditNote").entered();
+        let root_element = app.root_element();
+        let transactions = find_all_by_type_name(&root_element, "TransactionRow");
+        if transactions.is_empty() {
+            return;
+        }
+
+        let transaction = rng.choice(&transactions).unwrap();
+        let transaction_id = transaction.accessible_id().unwrap();
+        let note_cell = transaction.find_by_type_name("NoteCell");
+        let note = gen_string(rng);
+        // Active text field
+        note_cell.click();
+
+        // Clear the text field
+        note_cell.click();
+        note_cell.click();
+        note_cell.click();
+        send_key_combo(app, [Key::Backspace]);
+
+        send_keyboard_string_sequence(app, &note);
+        send_key_combo(app, [Key::Return]);
+
+        let transaction_state: TransactionState = app.global();
+        let transaction = transaction_state
+            .get_all_transactions()
+            .iter()
+            .find(|t| t.id == transaction_id)
+            .unwrap();
+        assert_eq!(&transaction.note, &note);
+        trace!(note = note, "Edited transaction note");
+    }
+}
+
+#[derive(Debug, Clone)]
 struct EditOutflow;
 
 impl EditOutflow {
@@ -322,13 +364,13 @@ impl TestRunner {
     }
 
     fn step(&mut self) {
-        // TODO: maybe i pass all the values and then run
         let rng = &mut self.rng;
         for i in 0..rng.u8(1..=10) {
             match &self.actions[rng.usize(0..self.actions.len())] {
                 Action::CreateTransaction(act) => act.execute(&self.app, rng),
                 Action::EditOutflow(act) => act.execute(&self.app, rng),
                 Action::CreateAccount(act) => act.execute(&self.app, rng),
+                Action::EditNote(act) => act.execute(&self.app, rng),
             }
         }
     }
@@ -403,12 +445,14 @@ fn run(seed: u64) {
         Action::CreateAccount(CreateAccount),
         Action::EditOutflow(EditOutflow),
         Action::CreateTransaction(CreateTransaction),
+        Action::EditNote(EditNote),
     ];
 
     // Pick a random subset of actions
     let len = rng.usize(1..=actions.len());
     let mut actions = rng.choose_multiple(actions, len);
 
+    debug!("Action set: {:?}", actions);
     let result = panic::catch_unwind(|| {
         let mut runner = TestRunner::new(seed, actions.clone());
         runner.run().unwrap();
@@ -419,6 +463,7 @@ fn run(seed: u64) {
         return;
     }
 
+    // TODO: run in reverse as well to isolate more
     while actions.len() > 1 {
         let mut new_actions = actions.clone();
         new_actions.pop();
