@@ -1122,6 +1122,7 @@ dependencies = [
  "i-slint-backend-testing",
  "i-slint-compiler",
  "i-slint-core",
+ "mukwa",
  "slint",
  "smol",
  "tracing",

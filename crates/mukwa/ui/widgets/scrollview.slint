@@ -3,10 +3,6 @@
 
 import { Colors } from "../colors.slint";
 
-// TODO: maybe add scrollbar size setting
-// TODO: expand on hover
-// TODO: height 100% then thumb (thumb should respond the number of items in the list with a min and max)
-// TODO: Only enable when needed, or use scroll bar policy
 component ScrollBar {
     in-out property <color> thumb-color: Colors.surface0;
     in-out property <length> maximum;
@@ -63,6 +59,8 @@ component ScrollBar {
 }
 
 export component ScrollView {
+    in-out property <length> content-x <=> flickable.content-x;
+    in-out property <length> content-y <=> flickable.content-y;
     in-out property <length> content-height <=> flickable.content-height;
     in-out property <color> scrollbar-thumb-color: Colors.surface2;
     preferred-width: 100%;
@@ -74,7 +72,6 @@ export component ScrollView {
         width: parent.width - scollbar.width;
         mouse-drag-pan-enabled: false;
         content-y <=> scollbar.value;
-        // height: parent.height;
         @children
     }
 
