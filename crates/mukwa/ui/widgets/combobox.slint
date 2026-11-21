@@ -2,10 +2,10 @@
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
 import { Colors } from "../colors.slint";
-import { ListView, ScrollView } from "std-widgets.slint";
 import { FocusBorder } from "./focus-border.slint";
 import { FontSize } from "../theme.slint";
 import { Icon, Icons } from "../icons.slint";
+import { ScrollView } from "scrollview.slint";
 
 export struct ComboBoxItem {
     value: string,
@@ -100,6 +100,7 @@ export component ComboBox {
                 padding-left: 8px;
                 padding-right: 8px;
                 flex-wrap: no-wrap;
+
                 text := Text {
                     text: options[current-index].text;
                     color: Colors.textBody;
@@ -152,9 +153,11 @@ export component ComboBox {
             }
         }
 
-        flickable := Flickable {
+        flickable := ScrollView {
+            // width: parent.width;
             max-height: 250px;
             content-height: content.preferred-height;
+
             content := VerticalLayout {
                 padding: 12px;
                 spacing: 8px;
@@ -162,6 +165,7 @@ export component ComboBox {
                 VerticalLayout {
                     spacing: 4px;
                     alignment: start;
+
                     Text {
                         text: @tr("Selected");
                         color: Colors.textMuted;
@@ -172,6 +176,7 @@ export component ComboBox {
                         background: Colors.surface1;
                         border-radius: 4px;
                         height: 24px;
+
                         HorizontalLayout {
                             cross-axis-alignment: center;
                             padding: 8px;
@@ -194,6 +199,7 @@ export component ComboBox {
 
                 VerticalLayout {
                     spacing: 4px;
+
                     Text {
                         text: @tr("Change selection");
                         color: Colors.textMuted;
@@ -226,6 +232,7 @@ export component ComboBox {
                                     }
                                 }
                             ]
+
                             inner-touch-area := TouchArea {
                                 clicked => {
                                     root.select(i);
@@ -238,6 +245,7 @@ export component ComboBox {
                             HorizontalLayout {
                                 cross-axis-alignment: center;
                                 padding: 8px;
+
                                 Text {
                                     text: option.text;
                                     color: Colors.textBody;

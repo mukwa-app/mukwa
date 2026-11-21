@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Wakunguma Kalimukwa
+
+import { ScrollView } from "widgets/scrollview.slint";
+
+
+export component TestCase inherits Rectangle {
+    width: 100px;
+    height: 100px;
+    in-out property <length> content-x <=> scrollview.content-x;
+    in-out property <length> content-y <=> scrollview.content-y;
+
+    scrollview := ScrollView {
+        width: parent.width;
+        height: parent.height;
+        content-height: 500px;
+    }
+}

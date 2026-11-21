@@ -84,6 +84,7 @@ component AccountListItem inherits SidebarButton {
     context-menu := ContextMenu {
         min-width: 250px;
         min-height: 50px;
+
         ContextMenuItem {
             text: @tr("Delete");
             clicked => {
@@ -183,6 +184,7 @@ component CreateAccountDialog inherits PopupWindow {
 
         VerticalLayout {
             spacing: 16px;
+
             name := TextField {
                 label: @tr("Name");
                 accepted => submit();

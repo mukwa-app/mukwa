@@ -4,6 +4,7 @@
 import { Colors } from "../colors.slint";
 import { Button, PrimaryButton } from "button.slint";
 import { Checkbox } from "checkbox.slint";
+import { ScrollView } from "scrollview.slint";
 
 export component TableCell inherits Rectangle {
     clip: true;
@@ -123,7 +124,7 @@ export component TableRow {
 export component Table {
     accessible-role: table;
 
-    Flickable {
+    ScrollView {
         width: parent.width;
         height: parent.height;
         content-height: layout.preferred-height;

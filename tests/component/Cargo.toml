@@ -12,6 +12,7 @@ smol = "2.0.2"
 slint.workspace = true
 tracing-subscriber.workspace = true
 i-slint-backend-testing.workspace = true
+mukwa = { path = "../../crates/mukwa" }
 
 [build-dependencies]
 smol = "2.0.2"
