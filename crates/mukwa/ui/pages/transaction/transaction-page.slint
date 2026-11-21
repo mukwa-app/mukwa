@@ -900,6 +900,28 @@ component TransactionTable inherits Table {
     }
     callback create-account();
 
+    forward-focus: focus-scope;
+
+    focus-scope := FocusScope {
+        KeyBinding {
+            keys: @keys(Delete);
+            activated => {
+                TransactionState.delete-selected-transactions();
+                TransactionState.load-transactions();
+                AccountState.load-accounts();
+            }
+        }
+
+        KeyBinding {
+            keys: @keys(Backspace);
+            activated => {
+                TransactionState.delete-selected-transactions();
+                TransactionState.load-transactions();
+                AccountState.load-accounts();
+            }
+        }
+    }
+
     Rectangle {
         width: 100%;
         height: 2px;
@@ -945,6 +967,10 @@ component TransactionTable inherits Table {
         length: length;
         visible: is-visible();
         height: self.visible ? self.preferred-height : 0;
+        selected => {
+            TransactionState.select-transaction(transaction.id);
+            focus-scope.focus();
+        }
         function is-visible() -> bool {
             if transaction.audited && !view-all-transactions {
                 return false;

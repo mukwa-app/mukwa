@@ -339,6 +339,7 @@ impl TransactionController {
                 service.delete_transaction(id)?;
             }
             state.set_transactions(ModelRc::new(VecModel::default()));
+            state.set_all_transactions(ModelRc::new(VecModel::default()));
         } else {
             let selected_transactions: Vec<_> = state.get_selected_transactions().iter().collect();
             for id in &selected_transactions {
@@ -350,7 +351,8 @@ impl TransactionController {
                 .iter()
                 .filter(|t| !selected_transactions.contains(&t.id))
                 .collect();
-            state.set_transactions(ModelRc::new(VecModel::from(transactions)));
+            state.set_transactions(ModelRc::new(VecModel::from(transactions.clone())));
+            state.set_all_transactions(ModelRc::new(VecModel::from(transactions)));
         }
 
         state.set_all_transactions_selected(false);
