@@ -73,6 +73,7 @@ export component TableRow {
 
             layout := VerticalLayout {
                 width: parent.width;
+
                 HorizontalLayout {
                     width: 100%;
                     padding-top: 8px;
@@ -121,10 +122,12 @@ export component TableRow {
 
 export component Table {
     accessible-role: table;
+
     Flickable {
         width: parent.width;
         height: parent.height;
         content-height: layout.preferred-height;
+
         layout := VerticalLayout {
             alignment: start;
             width: 100%;

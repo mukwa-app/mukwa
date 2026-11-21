@@ -1140,7 +1140,7 @@ dependencies = [
 [[package]]
 name = "const-field-offset"
 version = "0.2.1"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "const-field-offset-macro",
  "field-offset",
@@ -1149,7 +1149,7 @@ dependencies = [
 [[package]]
 name = "const-field-offset-macro"
 version = "0.2.1"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2553,7 +2553,7 @@ dependencies = [
 [[package]]
 name = "i-slint-backend-linuxkms"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "bytemuck",
  "calloop 0.14.5",
@@ -2580,7 +2580,7 @@ dependencies = [
 [[package]]
 name = "i-slint-backend-selector"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "cfg_aliases",
  "i-slint-backend-linuxkms",
@@ -2596,7 +2596,7 @@ dependencies = [
 [[package]]
 name = "i-slint-backend-testing"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "cfg_aliases",
  "i-slint-common",
@@ -2609,7 +2609,7 @@ dependencies = [
 [[package]]
 name = "i-slint-backend-winit"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -2655,7 +2655,7 @@ dependencies = [
 [[package]]
 name = "i-slint-common"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "derive_more",
  "euclid",
@@ -2673,7 +2673,7 @@ dependencies = [
 [[package]]
 name = "i-slint-compiler"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "annotate-snippets",
  "by_address",
@@ -2711,7 +2711,7 @@ dependencies = [
 [[package]]
 name = "i-slint-core"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "accesskit",
  "async-channel",
@@ -2766,7 +2766,7 @@ dependencies = [
 [[package]]
 name = "i-slint-core-macros"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "quote",
  "serde_json",
@@ -2776,7 +2776,7 @@ dependencies = [
 [[package]]
 name = "i-slint-renderer-femtovg"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "const-field-offset",
  "femtovg",
@@ -2795,7 +2795,7 @@ dependencies = [
 [[package]]
 name = "i-slint-renderer-skia"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "bytemuck",
  "cfg_aliases",
@@ -2832,7 +2832,7 @@ dependencies = [
 [[package]]
 name = "i-slint-renderer-software"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "bytemuck",
  "clru",
@@ -5683,7 +5683,7 @@ checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
 [[package]]
 name = "slint"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "const-field-offset",
  "i-slint-backend-linuxkms",
@@ -5704,7 +5704,7 @@ dependencies = [
 [[package]]
 name = "slint-build"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "derive_more",
  "fontique",
@@ -5716,7 +5716,7 @@ dependencies = [
 [[package]]
 name = "slint-macros"
 version = "1.19.0"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "i-slint-compiler",
  "proc-macro2",
@@ -6801,7 +6801,7 @@ dependencies = [
 [[package]]
 name = "vtable"
 version = "0.5.1"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "const-field-offset",
  "portable-atomic",
@@ -6812,7 +6812,7 @@ dependencies = [
 [[package]]
 name = "vtable-macro"
 version = "0.5.1"
-source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#850552a6a5d7693278a5bd21ae45f61fbb897705"
+source = "git+https://github.com/snubwoody/slint.git?branch=mukwa#310029655433a1af88550b3e5ba60746814eacdc"
 dependencies = [
  "proc-macro2",
  "quote",
