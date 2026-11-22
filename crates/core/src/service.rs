@@ -153,26 +153,6 @@ impl Transaction {
     }
 }
 
-impl<'a> TryFrom<&Row<'a>> for Category {
-    type Error = Error;
-
-    fn try_from(value: &Row<'a>) -> Result<Self, Self::Error> {
-        let id: String = value.get("id")?;
-        let title: String = value.get("title")?;
-        let group_id: String = value.get("group_id")?;
-        let account_id = value
-            .get::<_, Option<String>>("account_id")?
-            .map(|id| Uuid::parse_str(&id).unwrap());
-
-        Ok(Category {
-            id: Uuid::parse_str(&id)?,
-            title: title.to_string(),
-            group_id: Uuid::parse_str(&group_id)?,
-            account_id,
-        })
-    }
-}
-
 impl<'a> TryFrom<&Row<'a>> for Transaction {
     type Error = Error;
 
@@ -935,30 +915,33 @@ impl Service {
 
     /// Fetches all the categories in the category group.
     pub fn fetch_categories_in_group(&self, id: Uuid) -> crate::Result<Vec<Category>> {
-        let mut categories = vec![];
-        let connection = self.connection();
-        let sql = "SELECT * FROM categories WHERE group_id = ?";
-        let mut stmt = connection.prepare_cached(sql)?;
-        let rows = stmt.query_and_then([id.to_string()], |row| Category::try_from(row))?;
+        // let mut categories = vec![];
+        // let connection = self.connection();
+        // let sql = "SELECT * FROM categories WHERE group_id = ?";
+        // let mut stmt = connection.prepare_cached(sql)?;
+        // let rows = stmt.query_and_then([id.to_string()], |row| Category::try_from(row))?;
 
-        for row in rows {
-            categories.push(row?);
-        }
-        Ok(categories)
+        // for row in rows {
+        //     categories.push(row?);
+        // }
+        // Ok(categories)
+        todo!()
     }
 
     /// Fetches all category groups from the database.
+    #[deprecated = "use Service::fetch_categories instead"]
     pub fn fetch_category_groups(&self) -> crate::Result<Vec<CategoryGroup>> {
-        let mut category_groups = vec![];
-        let connection = self.connection();
-        let sql = "SELECT * FROM category_groups";
-        let mut stmt = connection.prepare_cached(sql)?;
-        let rows = stmt.query_and_then([], |row| CategoryGroup::try_from(row))?;
+        // let mut category_groups = vec![];
+        // let connection = self.connection();
+        // let sql = "SELECT * FROM category_groups";
+        // let mut stmt = connection.prepare_cached(sql)?;
+        // let rows = stmt.query_and_then([], |row| CategoryGroup::try_from(row))?;
 
-        for row in rows {
-            category_groups.push(row?);
-        }
-        Ok(category_groups)
+        // for row in rows {
+        //     category_groups.push(row?);
+        // }
+        // Ok(category_groups)
+        todo!()
     }
 
     pub fn fetch_unconfirmed_transactions(&self) -> crate::Result<Vec<Uuid>> {
