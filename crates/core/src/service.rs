@@ -1479,7 +1479,7 @@ impl Service {
 
     pub fn available_to_spend_in_group(&self, id: Uuid, date: Date) -> crate::Result<Money> {
         let mut available = Money::ZERO;
-        let groups = self.fetch_category_groups()?;
+        let groups = self.fetch_categories()?;
         let group = groups
             .iter()
             .find(|g| g.id == id)
