@@ -1086,13 +1086,10 @@ impl Service {
     /// Updates the category title.
     pub fn update_category(&self, id: Uuid, title: &str) -> crate::Result<Category> {
         let connection = self.connection();
-        let sql = "UPDATE categories SET title = ?1 WHERE id = ?2 RETURNING *";
+        let sql = "UPDATE categories SET title = ?1 WHERE id = ?2";
         let mut stmt = connection.prepare_cached(sql)?;
-        let mut rows = stmt.query_and_then([title, id.to_string().as_str()], |row| {
-            Category::try_from(row)
-        })?;
-        let category = rows.next().unwrap()?;
-        Ok(category)
+        stmt.execute([title, id.to_string().as_str()])?;
+        self.get_category(id)
     }
 
     /// Moves the category into the category group.
