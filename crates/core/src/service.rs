@@ -4,7 +4,6 @@
 use crate::{Error, Money, create_test_db};
 use jiff::ZonedDateTime;
 use jiff::civil::Date;
-use jiff::tz::Dst::No;
 use rusqlite::{Connection, Row, params};
 use std::collections::HashMap;
 use std::marker::PhantomData;
@@ -1559,6 +1558,56 @@ impl Service {
 mod test {
     use super::*;
     use jiff::civil::date;
+    use rusqlite::OptionalExtension;
+
+    #[test]
+    fn create_category_group() -> crate::Result<()> {
+        let service = Service::open_in_memory()?;
+        let group = service.create_category_group("Wants")?;
+        assert_eq!(group.title, "Wants");
+
+        service.connection().query_one(
+            "SELECT * FROM category_groups WHERE id = ?",
+            [group.id.to_string()],
+            |row| {
+                let deleted_at: Option<i64> = row.get("deleted_at")?;
+                let id: String = row.get("id")?;
+                let title: String = row.get("title")?;
+                let is_meta: bool = row.get("is_meta")?;
+
+                assert!(deleted_at.is_none());
+                assert_eq!(title, "Wants");
+                assert!(!is_meta);
+                assert_eq!(group.id.to_string(), id);
+                Ok(())
+            },
+        )?;
+        Ok(())
+    }
+
+    #[test]
+    fn move_category() -> crate::Result<()> {
+        let service = Service::open_in_memory()?;
+
+        let group = service.create_category_group("")?;
+        let group2 = service.create_category_group("")?;
+        let category = service.create_category("Groceries", group.id)?;
+        service.move_category(category.id, group2.id)?;
+
+        let group = service.get_category_group(group.id)?;
+        let group2 = service.get_category_group(group2.id)?;
+        assert!(!group.categories.contains(&category));
+        assert!(group2.categories.contains(&category));
+
+        service
+            .connection()
+            .query_one("SELECT * FROM categories", [], |row| {
+                let group_id: String = row.get("group_id")?;
+                assert_eq!(group_id, group2.id.to_string());
+                Ok(())
+            })?;
+        Ok(())
+    }
 
     #[test]
     fn total_assignable() -> crate::Result<()> {
@@ -1622,7 +1671,7 @@ mod test {
     #[test]
     fn create_missing_credit_categories() -> crate::Result<()> {
         let service = Service::open_in_memory()?;
-        let groups = service.fetch_category_groups()?;
+        let groups = service.fetch_categories()?;
         let credit_group = &groups[0];
         let credit_account = service.create_account("", AccountType::Credit)?;
         service.create_account("", AccountType::Cash)?;
@@ -1632,9 +1681,10 @@ mod test {
         assert_eq!(categories.len(), 1);
 
         let category = &categories[0];
-        assert_eq!(category.group_id, credit_group.id);
-        assert_eq!(category.account_id.unwrap(), credit_account.id);
-        Ok(())
+        // assert_eq!(category.group_id, credit_group.id);
+        // assert_eq!(category.account_id.unwrap(), credit_account.id);
+        todo!()
+        // Ok(())
     }
 
     #[test]
@@ -1717,6 +1767,35 @@ mod test {
         assert!(transfer.category_id.is_none());
         assert_eq!(transfer.date, date(2100, 12, 1));
         assert_eq!(transfer.note.unwrap(), "Transfer to savings");
+        Ok(())
+    }
+
+    #[test]
+    fn delete_category() -> crate::Result<()> {
+        let service = Service::open_in_memory()?;
+        let group = service.create_category_group("")?;
+        let category = service.create_category("", group.id)?;
+        service.delete_category(category.id)?;
+        let row = service
+            .connection()
+            .query_row("SELECT * FROM categories", [], |row| {
+                row.get::<_, String>("id")
+            })
+            .optional()?;
+        assert!(row.is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn delete_category_with_dependants() -> crate::Result<()> {
+        let service = Service::open_in_memory()?;
+        service.create_account("", AccountType::Cash)?;
+        let group = service.create_category_group("")?;
+        let category = service.create_category("", group.id)?;
+        service.create_expense().category(category.id).submit()?;
+        service.delete_category(category.id)?;
+        let transactions = service.fetch_transactions()?;
+        assert!(transactions[0].category_id.is_none());
         Ok(())
     }
 }
