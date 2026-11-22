@@ -1016,15 +1016,11 @@ impl Service {
     /// Creates a new [`Category`].
     pub fn create_category(&self, title: &str, group_id: Uuid) -> crate::Result<Category> {
         let connection = self.connection();
+        let id = Uuid::now_v7();
         let sql = "INSERT INTO categories(id,title,group_id) VALUES(?1,?2,?3) RETURNING *";
         let mut stmt = connection.prepare_cached(sql)?;
-
-        let mut rows = stmt.query_and_then(
-            params![&Uuid::now_v7().to_string(), title, group_id.to_string()],
-            |row| Category::try_from(row),
-        )?;
-        let category = rows.next().unwrap()?;
-        Ok(category)
+        stmt.execute(params![&id.to_string(), title, group_id.to_string()])?;
+        self.get_category(id)
     }
 
     /// Marks a transaction as unconfirmed.
