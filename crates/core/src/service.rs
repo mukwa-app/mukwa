@@ -4,6 +4,7 @@
 use crate::{Error, Money, create_test_db};
 use jiff::ZonedDateTime;
 use jiff::civil::Date;
+use jiff::tz::Dst::No;
 use rusqlite::{Connection, Row, params};
 use std::collections::HashMap;
 use std::marker::PhantomData;
@@ -168,22 +169,6 @@ impl<'a> TryFrom<&Row<'a>> for Category {
             title: title.to_string(),
             group_id: Uuid::parse_str(&group_id)?,
             account_id,
-        })
-    }
-}
-
-impl<'a> TryFrom<&Row<'a>> for CategoryGroup {
-    type Error = Error;
-
-    fn try_from(value: &Row<'a>) -> Result<Self, Self::Error> {
-        let id: String = value.get("id")?;
-        let title: String = value.get("title")?;
-        let is_meta: bool = value.get("is_meta")?;
-
-        Ok(CategoryGroup {
-            id: Uuid::parse_str(&id)?,
-            title: title.to_string(),
-            is_meta,
         })
     }
 }
@@ -892,17 +877,60 @@ impl Service {
     }
 
     /// Fetches all categories from the database.
-    pub fn fetch_categories(&self) -> crate::Result<Vec<Category>> {
-        let mut categories = vec![];
+    pub fn fetch_categories(&self) -> crate::Result<Vec<CategoryGroup>> {
+        let mut groups = vec![];
         let connection = self.connection();
-        let sql = "SELECT * FROM categories";
-        let mut stmt = connection.prepare_cached(sql)?;
-        let rows = stmt.query_and_then([], |row| Category::try_from(row))?;
+        let mut group_stmt = connection.prepare_cached("SELECT * FROM category_groups")?;
+        let mut group_rows = group_stmt.query(())?;
 
-        for row in rows {
-            categories.push(row?);
+        while let Ok(Some(row)) = group_rows.next() {
+            let id: String = row.get("id")?;
+            let title: String = row.get("title")?;
+            let is_meta: bool = row.get("is_meta")?;
+
+            let kind = if is_meta {
+                GroupKind::CreditPayment
+            } else {
+                GroupKind::Standard
+            };
+
+            let group = CategoryGroup {
+                id: Uuid::parse_str(&id)?,
+                title,
+                kind,
+                categories: Vec::new(),
+            };
+            groups.push(group);
         }
-        Ok(categories)
+
+        let mut category_stmt = connection.prepare_cached("SELECT * FROM categories")?;
+        let mut category_rows = category_stmt.query(())?;
+        while let Ok(Some(row)) = category_rows.next() {
+            let id: String = row.get("id")?;
+            let title: String = row.get("title")?;
+            let group_id = row
+                .get::<_, String>("group_id")
+                .map(|id| Uuid::parse_str(&id).unwrap())?;
+            let account_id = row
+                .get::<_, Option<String>>("account_id")?
+                .map(|id| Uuid::parse_str(&id).unwrap());
+
+            let kind = match account_id {
+                Some(id) => CategoryKind::CreditPayment { account_id: id },
+                None => CategoryKind::Standard,
+            };
+
+            let category = Category {
+                id: Uuid::parse_str(&id)?,
+                title,
+                kind,
+            };
+
+            if let Some(group) = groups.iter_mut().find(|g| g.id == group_id) {
+                group.categories.push(category);
+            }
+        }
+        Ok(groups)
     }
 
     /// Fetches all the categories in the category group.
