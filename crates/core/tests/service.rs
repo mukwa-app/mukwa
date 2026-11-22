@@ -163,27 +163,30 @@ fn cannot_delete_meta_category_group() -> Result<()> {
 
 #[test]
 fn cannot_delete_meta_category() -> Result<()> {
-    // let service = Service::open_in_memory()?;
-    // service.create_account("", AccountType::Credit)?;
-    // service.check_credit_account_categories()?;
+    let service = Service::open_in_memory()?;
+    service.create_account("", AccountType::Credit)?;
+    service.check_credit_account_categories()?;
 
-    // let groups = service.fetch_categories()?;
-    // let group
-    // let category = categories
-    //     .iter()
-    //     .find(|category| matches!(category.kind, CategoryKind::CreditPayment { account_id: _ }))
-    //     .unwrap();
-    // let result = service.delete_category(category.id);
-    // assert!(result.is_err());
-    // assert_eq!(
-    //     result.err().unwrap().to_string(),
-    //     "Meta categories cannot be deleted"
-    // );
+    let groups = service.fetch_categories()?;
+    let credit_payments = groups
+        .iter()
+        .find(|g| g.kind == GroupKind::CreditPayment)
+        .unwrap();
+    let category = credit_payments
+        .categories
+        .iter()
+        .find(|category| matches!(category.kind, CategoryKind::CreditPayment { account_id: _ }))
+        .unwrap();
+    let result = service.delete_category(category.id);
+    assert!(result.is_err());
+    assert_eq!(
+        result.err().unwrap().to_string(),
+        "Meta categories cannot be deleted"
+    );
 
-    // let categories = service.fetch_categories()?;
-    // assert_eq!(categories.len(), 1);
-    // Ok(())
-    todo!()
+    let categories = service.fetch_categories()?;
+    assert_eq!(categories.len(), 1);
+    Ok(())
 }
 
 #[test]
@@ -343,8 +346,8 @@ fn total_spent_credit_payments() -> Result<()> {
         .accounts(cash_account.id, credit_account.id)
         .submit()?;
     service.check_credit_account_categories()?;
-    let categories = service.fetch_categories()?;
-    let category = &categories[0];
+    let groups = service.fetch_categories()?;
+    let category = &groups[0].categories[0];
     let total = service.total_spent(category.id, ZonedDateTime::now().date())?;
     assert_eq!(total, Money::new(500));
     Ok(())
@@ -834,7 +837,6 @@ fn fetch_or_init_budgets() -> mukwa_core::Result<()> {
     })?;
 
     let budgets = service.fetch_or_init_budgets(ZonedDateTime::now().date())?;
-
     assert_eq!(budgets.len(), 3);
     Ok(())
 }
@@ -995,13 +997,14 @@ fn delete_category_group() -> mukwa_core::Result<()> {
 fn delete_category_group_deletes_categories_in_group() -> mukwa_core::Result<()> {
     let service = Service::open_in_memory()?;
     let group = service.create_category_group("")?;
-    service.create_category("", group.id)?;
-    service.create_category("", group.id)?;
-    service.create_category("", group.id)?;
+    let c1 = service.create_category("", group.id)?;
+    let c2 = service.create_category("", group.id)?;
+    let c3 = service.create_category("", group.id)?;
     service.delete_category_group(group.id)?;
 
-    let categories = service.fetch_categories()?;
-    assert!(categories.is_empty());
+    assert!(service.get_category(c1.id).is_err());
+    assert!(service.get_category(c2.id).is_err());
+    assert!(service.get_category(c3.id).is_err());
     Ok(())
 }
 
@@ -1142,8 +1145,9 @@ fn credit_income_does_not_affect_available_to_spend() -> Result<()> {
         .account(account.id)
         .amount(Money::new(50))
         .submit()?;
-    let categories = service.fetch_categories()?;
-    let available = service.available_to_spend(categories[0].id, ZonedDateTime::now().date())?;
+    let groups = service.fetch_categories()?;
+    let available =
+        service.available_to_spend(groups[0].categories[0].id, ZonedDateTime::now().date())?;
     assert_eq!(available, Money::ZERO);
     Ok(())
 }
@@ -1208,12 +1212,12 @@ fn available_to_spend_credit_categories() -> Result<()> {
                 .submit()?;
         }
 
-        let categories = service.fetch_categories()?;
+        let groups = service.fetch_categories()?;
         for (date, money) in case.budgets {
             service.create_budget(CreateBudgetOpts {
                 amount: Some(money),
                 month: Some(date),
-                category_id: categories[0].id,
+                category_id: groups[0].categories[0].id,
             })?;
         }
 
@@ -1235,8 +1239,8 @@ fn available_to_spend_credit_categories() -> Result<()> {
                 .submit()?;
         }
 
-        let categories = service.fetch_categories()?;
-        let category = &categories[0];
+        let groups = service.fetch_categories()?;
+        let category = &groups[0].categories[0];
 
         let available = service.available_to_spend(category.id, case.expected.0)?;
         assert_eq!(available, case.expected.1);

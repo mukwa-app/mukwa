@@ -569,8 +569,9 @@ impl Service {
     }
 
     pub fn fetch_or_init_budgets(&self, date: Date) -> crate::Result<Vec<Budget>> {
-        let categories = self.fetch_categories()?;
+        let groups = self.fetch_categories()?;
         let budgets = self.fetch_budgets_by_month(date)?;
+        let categories = groups.into_iter().flat_map(|g| g.categories);
 
         for category in categories {
             if budgets
@@ -1016,7 +1017,7 @@ impl Service {
     pub fn create_category(&self, title: &str, group_id: Uuid) -> crate::Result<Category> {
         let connection = self.connection();
         let id = Uuid::now_v7();
-        let sql = "INSERT INTO categories(id,title,group_id) VALUES(?1,?2,?3) RETURNING *";
+        let sql = "INSERT INTO categories(id,title,group_id) VALUES(?1,?2,?3)";
         let mut stmt = connection.prepare_cached(sql)?;
         stmt.execute(params![&id.to_string(), title, group_id.to_string()])?;
         self.get_category(id)
@@ -1672,19 +1673,22 @@ mod test {
     fn create_missing_credit_categories() -> crate::Result<()> {
         let service = Service::open_in_memory()?;
         let groups = service.fetch_categories()?;
-        let credit_group = &groups[0];
         let credit_account = service.create_account("", AccountType::Credit)?;
         service.create_account("", AccountType::Cash)?;
         service.check_credit_account_categories()?;
 
-        let categories = service.fetch_categories()?;
+        let groups = service.fetch_categories()?;
+        let categories: Vec<_> = groups.into_iter().flat_map(|g| g.categories).collect();
         assert_eq!(categories.len(), 1);
 
         let category = &categories[0];
-        // assert_eq!(category.group_id, credit_group.id);
-        // assert_eq!(category.account_id.unwrap(), credit_account.id);
-        todo!()
-        // Ok(())
+        assert_eq!(
+            category.kind,
+            CategoryKind::CreditPayment {
+                account_id: credit_account.id
+            }
+        );
+        Ok(())
     }
 
     #[test]
@@ -1694,12 +1698,12 @@ mod test {
         service.create_account("", AccountType::Credit)?;
         service.check_credit_account_categories()?;
 
-        let categories = service.fetch_categories()?;
-        assert_eq!(categories.len(), 2);
+        let groups = service.fetch_categories()?;
+        assert_eq!(groups[0].categories.len(), 2);
 
         service.check_credit_account_categories()?;
-        let categories = service.fetch_categories()?;
-        assert_eq!(categories.len(), 2);
+        let groups = service.fetch_categories()?;
+        assert_eq!(groups[0].categories.len(), 2);
         Ok(())
     }
 
