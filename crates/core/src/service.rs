@@ -1107,13 +1107,10 @@ impl Service {
     /// Updates the category group title.
     pub fn update_category_group(&self, id: Uuid, title: &str) -> crate::Result<CategoryGroup> {
         let connection = self.connection();
-        let sql = "UPDATE category_groups SET title = ?1 WHERE id = ?2 RETURNING *";
+        let sql = "UPDATE category_groups SET title = ?1 WHERE id = ?2";
         let mut stmt = connection.prepare_cached(sql)?;
-        let mut rows = stmt.query_and_then([title, id.to_string().as_str()], |row| {
-            CategoryGroup::try_from(row)
-        })?;
-        let group = rows.next().unwrap()?;
-        Ok(group)
+        stmt.execute([title, id.to_string().as_str()])?;
+        self.get_category_group(id)
     }
 
     /// Updates the budget amount.
