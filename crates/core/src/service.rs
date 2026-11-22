@@ -1417,7 +1417,7 @@ impl Service {
         let total_spent = self.total_spent_in_category(category_id, date)?;
         let mut available = total_assigned - total_spent;
         let category = self.get_category(category_id)?;
-        if let Some(account_id) = category.account_id {
+        if let CategoryKind::CreditPayment { account_id } = category.kind {
             let transactions = self.fetch_transactions()?;
             let credit_expenses: Money = transactions
                 .iter()
