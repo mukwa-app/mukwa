@@ -27,25 +27,37 @@ impl ElementHandleExt for ElementHandle {
         self.mock_single_click(PointerEventButton::Left)
     }
 
+    #[track_caller]
     fn find_by_accessible_label(&self, label: &str) -> ElementHandle {
-        self.query_descendants()
+        let element = self
+            .query_descendants()
             .match_accessible_label(label)
-            .find_first()
-            .unwrap_or_else(|| panic!("Element with accessible label '{label}' not found"))
+            .find_first();
+        assert!(
+            element.is_some(),
+            "Element with accessible label '{label}' not found"
+        );
+        element.unwrap()
     }
 
+    #[track_caller]
     fn find_by_id(&self, id: &str) -> ElementHandle {
-        self.query_descendants()
-            .match_id(id)
-            .find_first()
-            .unwrap_or_else(|| panic!("Element with id '{id}' not found"))
+        let element = self.query_descendants().match_id(id).find_first();
+        assert!(element.is_some(), "Element with id '{id}' not found");
+        element.unwrap()
     }
 
+    #[track_caller]
     fn find_by_type_name(&self, type_name: &str) -> ElementHandle {
-        self.query_descendants()
+        let element = self
+            .query_descendants()
             .match_type_name(type_name)
-            .find_first()
-            .unwrap_or_else(|| panic!("Element with type name '{type_name}' not found"))
+            .find_first();
+        assert!(
+            element.is_some(),
+            "Element with type name '{type_name}' not found"
+        );
+        element.unwrap()
     }
 
     fn find_all_by_type_name(&self, type_name: &str) -> Vec<ElementHandle> {
@@ -65,36 +77,25 @@ pub fn setup() -> crate::Result<(MainWindow, Service)> {
 }
 
 /// Finds the element with the given accessible label, panics if the element cannot be found.
+#[track_caller]
 pub fn find_by_accessible_label(element: &ElementHandle, label: &str) -> ElementHandle {
-    element
-        .query_descendants()
-        .match_accessible_label(label)
-        .find_first()
-        .unwrap_or_else(|| panic!("Element with accessible label '{label}' not found"))
+    element.find_by_accessible_label(label)
 }
 
 /// Finds the element with the given type id, panics if the element cannot be found.
+#[track_caller]
 pub fn find_by_id(element: &ElementHandle, id: &str) -> ElementHandle {
-    element
-        .query_descendants()
-        .match_id(id)
-        .find_first()
-        .unwrap_or_else(|| panic!("Element with id '{id}' not found"))
+    element.find_by_id(id)
 }
 
 /// Finds the element with the given type name, panics if the element cannot be found.
+#[track_caller]
 pub fn find_by_type_name(element: &ElementHandle, type_name: &str) -> ElementHandle {
-    element
-        .query_descendants()
-        .match_type_name(type_name)
-        .find_first()
-        .unwrap_or_else(|| panic!("Element with type name '{type_name}' not found"))
+    element.find_by_type_name(type_name)
 }
 
 /// Finds all the elements with the given type name.
+#[track_caller]
 pub fn find_all_by_type_name(element: &ElementHandle, type_name: &str) -> Vec<ElementHandle> {
-    element
-        .query_descendants()
-        .match_type_name(type_name)
-        .find_all()
+    element.find_all_by_type_name(type_name)
 }
