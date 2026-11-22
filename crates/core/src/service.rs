@@ -1152,10 +1152,15 @@ impl Service {
     }
 
     pub fn get_category(&self, id: Uuid) -> crate::Result<Category> {
-        let connection = self.connection();
-        let mut stmt = connection.prepare_cached("SELECT * FROM categories WHERE id = ?")?;
-        let mut rows = stmt.query_and_then([id.to_string()], |row| Category::try_from(row))?;
-        rows.next().ok_or(Error::new("Category not found"))?
+        let groups = self.fetch_categories()?;
+        for group in groups {
+            for category in group.categories {
+                if category.id == id {
+                    return Ok(category);
+                }
+            }
+        }
+        Err(Error::new("Category not found"))
     }
 
     pub fn get_budget(&self, id: Uuid) -> crate::Result<Budget> {
