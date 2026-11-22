@@ -689,7 +689,7 @@ impl Service {
     /// Calculates the total amount spent in the category in a specific month.
     pub fn total_spent(&self, category_id: Uuid, month: Date) -> crate::Result<Money> {
         let category = self.get_category(category_id)?;
-        if let Some(account_id) = category.account_id {
+        if let CategoryKind::CreditPayment { account_id } = category.kind {
             return self.credit_payments(account_id, month);
         }
 
