@@ -1,5 +1,7 @@
 ## (unreleased)
 
+- Added key bindings.
+  - `delete` or `backspace`: delete selected transactions.
 - Added scrollbars.
 
 ## 0.4.0 - 2026-11-17
