@@ -1050,13 +1050,11 @@ impl Service {
     /// Creates a new [`CategoryGroup`].
     pub fn create_category_group(&self, title: &str) -> crate::Result<CategoryGroup> {
         let connection = self.connection();
-        let sql = "INSERT INTO category_groups(id,title) VALUES(?1,?2) RETURNING *";
+        let id = Uuid::now_v7();
+        let sql = "INSERT INTO category_groups(id,title) VALUES(?1,?2)";
         let mut stmt = connection.prepare_cached(sql)?;
-        let mut rows = stmt.query_and_then([&Uuid::now_v7().to_string(), title], |row| {
-            CategoryGroup::try_from(row)
-        })?;
-        let group = rows.next().unwrap()?;
-        Ok(group)
+        stmt.execute([&id.to_string(), title])?;
+        self.get_category_group(id)
     }
 
     /// Creates a new [`Budget`].
