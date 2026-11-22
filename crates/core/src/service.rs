@@ -977,10 +977,10 @@ impl Service {
         let account = rows.next().unwrap()?;
 
         if account_type == AccountType::Credit {
-            let groups = self.fetch_category_groups()?;
+            let groups = self.fetch_categories()?;
             let credit_group = groups
                 .iter()
-                .find(|group| group.is_meta)
+                .find(|group| group.kind == GroupKind::CreditPayment)
                 .ok_or(Error::new("Credit payments group does not exist"))?;
 
             let connection = self.connection();
