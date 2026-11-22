@@ -1512,17 +1512,16 @@ impl Service {
 
     /// Creates any missing credit account categories.
     pub fn check_credit_account_categories(&self) -> crate::Result<()> {
-        let groups = self.fetch_category_groups()?;
+        let groups = self.fetch_categories()?;
         let credit_group = groups
             .iter()
-            .find(|group| group.is_meta)
+            .find(|group| group.kind == GroupKind::CreditPayment)
             .ok_or(Error::new("Credit payments group does not exist"))?;
 
         let accounts = self.fetch_accounts()?;
         let iter = accounts
             .iter()
             .filter(|account| account.account_type == AccountType::Credit);
-        let categories = self.fetch_categories()?;
 
         let connection = self.connection();
         let sql =
@@ -1530,9 +1529,15 @@ impl Service {
         let mut stmt = connection.prepare_cached(sql)?;
 
         for account in iter {
-            let exists = categories
+            let exists = credit_group
+                .categories
                 .iter()
-                .find(|c| c.account_id.unwrap_or_default() == account.id)
+                .find(|c| {
+                    c.kind
+                        == CategoryKind::CreditPayment {
+                            account_id: account.id,
+                        }
+                })
                 .is_some();
             if exists {
                 continue;
@@ -1544,9 +1549,7 @@ impl Service {
                 credit_group.id.to_string(),
                 account.id.to_string()
             ];
-            let mut rows = stmt.query_and_then(params, |row| Category::try_from(row))?;
-
-            let _ = rows.next().unwrap()?;
+            stmt.execute(params)?;
         }
         Ok(())
     }
