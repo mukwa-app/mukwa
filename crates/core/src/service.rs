@@ -11,6 +11,37 @@ use std::path::Path;
 use std::rc::Rc;
 use uuid::Uuid;
 
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub struct CategoryGroup {
+    pub id: Uuid,
+    pub title: String,
+    pub kind: GroupKind,
+    pub categories: Vec<Category>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
+pub enum GroupKind {
+    #[default]
+    Standard,
+    CreditPayment,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
+pub enum CategoryKind {
+    #[default]
+    /// A regular category such as Groceries or Rent.
+    Standard,
+    /// A category tied to credit account.
+    CreditPayment { account_id: Uuid },
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub struct Category {
+    pub id: Uuid,
+    pub title: String,
+    pub kind: CategoryKind,
+}
+
 #[derive(Debug, Clone, PartialEq, PartialOrd, Ord, Eq, Default)]
 pub struct Account {
     pub id: Uuid,
@@ -60,21 +91,6 @@ impl<'a> TryFrom<&Row<'a>> for Budget {
             category_id: Uuid::parse_str(&category_id)?,
         })
     }
-}
-
-#[derive(PartialOrd, PartialEq, Debug, Default, Clone)]
-pub struct Category {
-    pub id: Uuid,
-    pub title: String,
-    pub group_id: Uuid,
-    pub account_id: Option<Uuid>,
-}
-
-#[derive(PartialOrd, PartialEq, Debug, Default, Clone)]
-pub struct CategoryGroup {
-    pub id: Uuid,
-    pub title: String,
-    pub is_meta: bool,
 }
 
 #[derive(PartialOrd, PartialEq, Debug, Clone, Copy, Eq, Ord)]
