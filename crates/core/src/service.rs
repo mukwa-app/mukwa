@@ -594,7 +594,7 @@ impl Service {
     /// Deletes a category from the database
     pub fn delete_category(&self, id: Uuid) -> crate::Result<()> {
         let category = self.get_category(id)?;
-        if category.account_id.is_some() {
+        if matches!(category.kind, CategoryKind::CreditPayment { account_id: _ }) {
             return Err(Error::new("Meta categories cannot be deleted"));
         }
 
