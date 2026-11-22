@@ -1193,7 +1193,7 @@ impl Service {
         category_id: Uuid,
     ) -> crate::Result<Transaction> {
         let category = self.get_category(category_id)?;
-        if category.account_id.is_some() {
+        if matches!(category.kind, CategoryKind::CreditPayment { account_id: _ }) {
             let error = Error::new("Cannot assign meta category to transaction");
             return Err(error);
         }
