@@ -914,7 +914,7 @@ impl Service {
     }
 
     /// Fetches all the categories in the category group.
-    pub fn fetch_categories_in_group(&self, id: Uuid) -> crate::Result<Vec<Category>> {
+    pub fn fetch_categories_in_group(&self, _id: Uuid) -> crate::Result<Vec<Category>> {
         // let mut categories = vec![];
         // let connection = self.connection();
         // let sql = "SELECT * FROM categories WHERE group_id = ?";
@@ -1672,7 +1672,7 @@ mod test {
     #[test]
     fn create_missing_credit_categories() -> crate::Result<()> {
         let service = Service::open_in_memory()?;
-        let groups = service.fetch_categories()?;
+        let _groups = service.fetch_categories()?;
         let credit_account = service.create_account("", AccountType::Credit)?;
         service.create_account("", AccountType::Cash)?;
         service.check_credit_account_categories()?;

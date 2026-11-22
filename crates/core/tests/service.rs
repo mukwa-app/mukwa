@@ -6,7 +6,7 @@ use jiff::{ToSpan, ZonedDateTime};
 use mukwa_core::Result;
 use mukwa_core::migrator::Migrator;
 use mukwa_core::service::{
-    AccountType, Category, CategoryKind, CreateBudgetOpts, GroupKind, Service, TransactionKind,
+    AccountType, CategoryKind, CreateBudgetOpts, GroupKind, Service, TransactionKind,
     TransactionType,
 };
 use mukwa_core::{Money, create_test_db};
