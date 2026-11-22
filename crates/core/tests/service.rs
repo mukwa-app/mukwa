@@ -6,7 +6,8 @@ use jiff::{ToSpan, ZonedDateTime};
 use mukwa_core::Result;
 use mukwa_core::migrator::Migrator;
 use mukwa_core::service::{
-    AccountType, Category, CreateBudgetOpts, Service, TransactionKind, TransactionType,
+    AccountType, CategoryKind, CreateBudgetOpts, GroupKind, Service, TransactionKind,
+    TransactionType,
 };
 use mukwa_core::{Money, create_test_db};
 use rstest::rstest;
@@ -140,57 +141,14 @@ fn create_category() -> mukwa_core::Result<()> {
 }
 
 #[test]
-fn move_category() -> mukwa_core::Result<()> {
-    let service = Service::open_in_memory()?;
-
-    let group = service.create_category_group("")?;
-    let group2 = service.create_category_group("")?;
-    let category = service.create_category("Groceries", group.id)?;
-    let category = service.move_category(category.id, group2.id)?;
-
-    assert_eq!(category.group_id, group2.id);
-
-    service
-        .connection()
-        .query_one("SELECT * FROM categories", [], |row| {
-            let group_id: String = row.get("group_id")?;
-            assert_eq!(group_id, group2.id.to_string());
-            Ok(())
-        })?;
-    Ok(())
-}
-
-#[test]
-fn create_category_group() -> mukwa_core::Result<()> {
-    let service = Service::open_in_memory()?;
-    let group = service.create_category_group("Wants")?;
-    assert_eq!(group.title, "Wants");
-
-    service.connection().query_one(
-        "SELECT * FROM category_groups WHERE id = ?",
-        [group.id.to_string()],
-        |row| {
-            let deleted_at: Option<i64> = row.get("deleted_at")?;
-            let id: String = row.get("id")?;
-            let title: String = row.get("title")?;
-            let is_meta: bool = row.get("is_meta")?;
-
-            assert!(deleted_at.is_none());
-            assert_eq!(title, "Wants");
-            assert!(!is_meta);
-            assert_eq!(group.id.to_string(), id);
-            Ok(())
-        },
-    )?;
-    Ok(())
-}
-
-#[test]
 fn cannot_delete_meta_category_group() -> Result<()> {
     let service = Service::open_in_memory()?;
-    let groups = service.fetch_category_groups()?;
+    let groups = service.fetch_categories()?;
     assert_eq!(groups.len(), 1);
-    let credit_payments = groups.iter().find(|group| group.is_meta).unwrap();
+    let credit_payments = groups
+        .iter()
+        .find(|group| group.kind == GroupKind::CreditPayment)
+        .unwrap();
     let result = service.delete_category_group(credit_payments.id);
     assert!(result.is_err());
     assert_eq!(
@@ -198,8 +156,7 @@ fn cannot_delete_meta_category_group() -> Result<()> {
         "Meta category groups cannot be deleted"
     );
 
-    // Make sure it hasn't been deleted
-    let groups = service.fetch_category_groups()?;
+    let groups = service.fetch_categories()?;
     assert_eq!(groups.len(), 1);
     Ok(())
 }
@@ -210,10 +167,15 @@ fn cannot_delete_meta_category() -> Result<()> {
     service.create_account("", AccountType::Credit)?;
     service.check_credit_account_categories()?;
 
-    let categories = service.fetch_categories()?;
-    let category = categories
+    let groups = service.fetch_categories()?;
+    let credit_payments = groups
         .iter()
-        .find(|category| category.account_id.is_some())
+        .find(|g| g.kind == GroupKind::CreditPayment)
+        .unwrap();
+    let category = credit_payments
+        .categories
+        .iter()
+        .find(|category| matches!(category.kind, CategoryKind::CreditPayment { account_id: _ }))
         .unwrap();
     let result = service.delete_category(category.id);
     assert!(result.is_err());
@@ -222,7 +184,6 @@ fn cannot_delete_meta_category() -> Result<()> {
         "Meta categories cannot be deleted"
     );
 
-    // Make sure it hasn't been deleted
     let categories = service.fetch_categories()?;
     assert_eq!(categories.len(), 1);
     Ok(())
@@ -385,8 +346,8 @@ fn total_spent_credit_payments() -> Result<()> {
         .accounts(cash_account.id, credit_account.id)
         .submit()?;
     service.check_credit_account_categories()?;
-    let categories = service.fetch_categories()?;
-    let category = &categories[0];
+    let groups = service.fetch_categories()?;
+    let category = &groups[0].categories[0];
     let total = service.total_spent(category.id, ZonedDateTime::now().date())?;
     assert_eq!(total, Money::new(500));
     Ok(())
@@ -851,27 +812,11 @@ fn fetch_transactions() -> mukwa_core::Result<()> {
 #[test]
 fn fetch_categories() -> mukwa_core::Result<()> {
     let service = Service::open_in_memory()?;
-    let group = service.create_category_group("")?;
-    let c1 = service.create_category("", group.id)?;
-    let c2 = service.create_category("", group.id)?;
-    let c3 = service.create_category("", group.id)?;
-
-    let categories = service.fetch_categories()?;
-    assert_eq!(categories.len(), 3);
-    assert!(categories.contains(&c1));
-    assert!(categories.contains(&c2));
-    assert!(categories.contains(&c3));
-    Ok(())
-}
-
-#[test]
-fn fetch_category_groups() -> mukwa_core::Result<()> {
-    let service = Service::open_in_memory()?;
     let g1 = service.create_category_group("Needs")?;
     let g2 = service.create_category_group("Wants")?;
     let g3 = service.create_category_group("Investments & Savings")?;
 
-    let category_groups = service.fetch_category_groups()?;
+    let category_groups = service.fetch_categories()?;
     assert!(category_groups.contains(&g1));
     assert!(category_groups.contains(&g2));
     assert!(category_groups.contains(&g3));
@@ -892,7 +837,6 @@ fn fetch_or_init_budgets() -> mukwa_core::Result<()> {
     })?;
 
     let budgets = service.fetch_or_init_budgets(ZonedDateTime::now().date())?;
-
     assert_eq!(budgets.len(), 3);
     Ok(())
 }
@@ -1037,30 +981,14 @@ fn set_payee_sets_category_to_null() -> mukwa_core::Result<()> {
 }
 
 #[test]
-fn delete_category() -> mukwa_core::Result<()> {
-    let service = Service::open_in_memory()?;
-    let group = service.create_category_group("")?;
-    let category = service.create_category("", group.id)?;
-    service.delete_category(category.id)?;
-    let row = service
-        .connection()
-        .query_row("SELECT * FROM categories", [], |row| {
-            Ok(Category::try_from(row).unwrap())
-        })
-        .optional()?;
-    assert!(row.is_none());
-    Ok(())
-}
-
-#[test]
 fn delete_category_group() -> mukwa_core::Result<()> {
     let service = Service::open_in_memory()?;
     let group = service.create_category_group("")?;
-    let groups = service.fetch_category_groups()?;
+    let groups = service.fetch_categories()?;
     assert!(groups.contains(&group));
 
     service.delete_category_group(group.id)?;
-    let groups = service.fetch_category_groups()?;
+    let groups = service.fetch_categories()?;
     assert!(!groups.contains(&group));
     Ok(())
 }
@@ -1069,37 +997,17 @@ fn delete_category_group() -> mukwa_core::Result<()> {
 fn delete_category_group_deletes_categories_in_group() -> mukwa_core::Result<()> {
     let service = Service::open_in_memory()?;
     let group = service.create_category_group("")?;
-    service.create_category("", group.id)?;
-    service.create_category("", group.id)?;
-    service.create_category("", group.id)?;
+    let c1 = service.create_category("", group.id)?;
+    let c2 = service.create_category("", group.id)?;
+    let c3 = service.create_category("", group.id)?;
     service.delete_category_group(group.id)?;
 
-    let categories = service.fetch_categories()?;
-    assert!(categories.is_empty());
+    assert!(service.get_category(c1.id).is_err());
+    assert!(service.get_category(c2.id).is_err());
+    assert!(service.get_category(c3.id).is_err());
     Ok(())
 }
 
-#[test]
-fn delete_category_with_dependants() -> mukwa_core::Result<()> {
-    let service = Service::open_in_memory()?;
-    service.create_account("", AccountType::Cash)?;
-    let group = service.create_category_group("")?;
-    let category = service.create_category("", group.id)?;
-    service.create_expense().category(category.id).submit()?;
-    service.delete_category(category.id)?;
-
-    let row = service
-        .connection()
-        .query_row("SELECT * FROM categories", [], |row| {
-            Ok(Category::try_from(row).unwrap())
-        })
-        .optional()?;
-    assert!(row.is_none());
-
-    let transactions = service.fetch_transactions()?;
-    assert!(transactions[0].category_id.is_none());
-    Ok(())
-}
 #[test]
 fn delete_category_deletes_budget() -> mukwa_core::Result<()> {
     let service = Service::open_in_memory()?;
@@ -1237,8 +1145,9 @@ fn credit_income_does_not_affect_available_to_spend() -> Result<()> {
         .account(account.id)
         .amount(Money::new(50))
         .submit()?;
-    let categories = service.fetch_categories()?;
-    let available = service.available_to_spend(categories[0].id, ZonedDateTime::now().date())?;
+    let groups = service.fetch_categories()?;
+    let available =
+        service.available_to_spend(groups[0].categories[0].id, ZonedDateTime::now().date())?;
     assert_eq!(available, Money::ZERO);
     Ok(())
 }
@@ -1303,12 +1212,12 @@ fn available_to_spend_credit_categories() -> Result<()> {
                 .submit()?;
         }
 
-        let categories = service.fetch_categories()?;
+        let groups = service.fetch_categories()?;
         for (date, money) in case.budgets {
             service.create_budget(CreateBudgetOpts {
                 amount: Some(money),
                 month: Some(date),
-                category_id: categories[0].id,
+                category_id: groups[0].categories[0].id,
             })?;
         }
 
@@ -1330,8 +1239,8 @@ fn available_to_spend_credit_categories() -> Result<()> {
                 .submit()?;
         }
 
-        let categories = service.fetch_categories()?;
-        let category = &categories[0];
+        let groups = service.fetch_categories()?;
+        let category = &groups[0].categories[0];
 
         let available = service.available_to_spend(category.id, case.expected.0)?;
         assert_eq!(available, case.expected.1);
