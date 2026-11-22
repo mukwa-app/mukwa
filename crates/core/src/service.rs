@@ -608,7 +608,7 @@ impl Service {
     /// Deletes a category group from the database
     pub fn delete_category_group(&self, id: Uuid) -> crate::Result<()> {
         let group = self.get_category_group(id)?;
-        if group.is_meta {
+        if group.kind == GroupKind::CreditPayment {
             return Err(Error::new("Meta category groups cannot be deleted"));
         }
 
