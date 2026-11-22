@@ -1144,10 +1144,11 @@ impl Service {
     }
 
     pub fn get_category_group(&self, id: Uuid) -> crate::Result<CategoryGroup> {
-        let connection = self.connection();
-        let mut stmt = connection.prepare_cached("SELECT * FROM category_groups WHERE id = ?")?;
-        let mut rows = stmt.query_and_then([id.to_string()], |row| CategoryGroup::try_from(row))?;
-        rows.next().ok_or(Error::new("Category group not found"))?
+        let groups = self.fetch_categories()?;
+        groups
+            .into_iter()
+            .find(|g| g.id == id)
+            .ok_or(Error::new("Category group not found"))
     }
 
     pub fn get_category(&self, id: Uuid) -> crate::Result<Category> {
