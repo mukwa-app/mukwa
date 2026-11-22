@@ -1445,7 +1445,7 @@ impl Service {
         let category = self.get_category(category_id)?;
         let transactions = self.fetch_transactions()?;
 
-        if let Some(account_id) = category.account_id {
+        if let CategoryKind::CreditPayment { account_id } = category.kind {
             let total_spent: Money = transactions
                 .iter()
                 .filter(|t| t.transaction_type() == TransactionType::Transfer)
