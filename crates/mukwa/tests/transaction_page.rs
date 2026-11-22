@@ -1224,3 +1224,59 @@ fn audit_account_create_correction() -> Result<()> {
     );
     Ok(())
 }
+
+#[test]
+fn delete_transaction_keyboard_shortcuts() -> Result<()> {
+    let (app, service) = setup()?;
+    let settings: Settings = app.global();
+    settings.set_currency_code("CAD".to_shared_string());
+
+    let root_element = app.root_element();
+    let transaction_state: TransactionState = app.global();
+
+    service.create_account("", AccountType::Cash)?;
+    let t1 = service.create_expense().submit()?;
+    let t2 = service.create_expense().submit()?;
+    service.create_expense().submit()?;
+    service.create_expense().submit()?;
+
+    transaction_state.invoke_load_transactions();
+
+    root_element
+        .find_by_accessible_id(&t1.id.to_string())
+        .find_by_type_name("Checkbox")
+        .click();
+    i_slint_backend_testing::send_key_combo(&app, [Key::Delete]);
+
+    let ids: Vec<_> = transaction_state
+        .get_all_transactions()
+        .iter()
+        .map(|t| t.id)
+        .collect();
+    assert_eq!(ids.len(), 3);
+    assert!(!ids.contains(&t1.id.to_shared_string()));
+
+    root_element
+        .find_by_accessible_id(&t2.id.to_string())
+        .find_by_type_name("Checkbox")
+        .click();
+    i_slint_backend_testing::send_key_combo(&app, [Key::Backspace]);
+
+    let ids: Vec<_> = transaction_state
+        .get_all_transactions()
+        .iter()
+        .map(|t| t.id)
+        .collect();
+    assert!(!ids.contains(&t2.id.to_shared_string()));
+    assert_eq!(ids.len(), 2);
+
+    root_element.find_by_type_name("Checkbox").click();
+    i_slint_backend_testing::send_key_combo(&app, [Key::Backspace]);
+    let ids: Vec<_> = transaction_state
+        .get_all_transactions()
+        .iter()
+        .map(|t| t.id)
+        .collect();
+    assert!(ids.is_empty());
+    Ok(())
+}

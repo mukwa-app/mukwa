@@ -6,7 +6,7 @@
 use super::*;
 use i_slint_backend_testing::ElementHandle;
 use mukwa_core::create_test_db;
-use slint::language::PointerEventButton;
+use slint::{ToSharedString, language::PointerEventButton};
 
 pub trait ElementHandleExt {
     /// Simulates a single click (or touch tap) on the element at its center point with the
@@ -14,6 +14,8 @@ pub trait ElementHandleExt {
     fn click(&self);
     /// Finds the element with the given accessible label, panics if the element cannot be found.
     fn find_by_accessible_label(&self, label: &str) -> ElementHandle;
+    /// Finds the element with the given accessible id, panics if the element cannot be found.
+    fn find_by_accessible_id(&self, label: &str) -> ElementHandle;
     /// Finds the element with the given type id, panics if the element cannot be found.
     fn find_by_id(&self, id: &str) -> ElementHandle;
     /// Finds the element with the given type name, panics if the element cannot be found.
@@ -36,6 +38,23 @@ impl ElementHandleExt for ElementHandle {
         assert!(
             element.is_some(),
             "Element with accessible label '{label}' not found"
+        );
+        element.unwrap()
+    }
+
+    #[track_caller]
+    fn find_by_accessible_id(&self, id: &str) -> ElementHandle {
+        let id = id.to_shared_string();
+        let element = self
+            .query_descendants()
+            .match_predicate({
+                let id = id.clone();
+                move |el| el.accessible_id() == Some(id.clone())
+            })
+            .find_first();
+        assert!(
+            element.is_some(),
+            "Element with accessible id '{id}' not found"
         );
         element.unwrap()
     }
