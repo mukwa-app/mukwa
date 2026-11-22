@@ -928,22 +928,6 @@ impl Service {
         todo!()
     }
 
-    /// Fetches all category groups from the database.
-    #[deprecated = "use Service::fetch_categories instead"]
-    pub fn fetch_category_groups(&self) -> crate::Result<Vec<CategoryGroup>> {
-        // let mut category_groups = vec![];
-        // let connection = self.connection();
-        // let sql = "SELECT * FROM category_groups";
-        // let mut stmt = connection.prepare_cached(sql)?;
-        // let rows = stmt.query_and_then([], |row| CategoryGroup::try_from(row))?;
-
-        // for row in rows {
-        //     category_groups.push(row?);
-        // }
-        // Ok(category_groups)
-        todo!()
-    }
-
     pub fn fetch_unconfirmed_transactions(&self) -> crate::Result<Vec<Uuid>> {
         let connection = self.connection();
         let sql = "SELECT transaction_id FROM unconfirmed_transactions";
