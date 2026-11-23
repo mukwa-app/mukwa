@@ -186,7 +186,7 @@ fn create_category_group() -> mukwa_core::Result<()> {
 }
 
 #[test]
-fn cannot_delete_meta_category_group() -> Result<()> {
+fn cannot_delete_credit_payment_category_group() -> Result<()> {
     let service = Service::open_in_memory()?;
     let groups = service.fetch_category_groups()?;
     assert_eq!(groups.len(), 1);
@@ -198,10 +198,9 @@ fn cannot_delete_meta_category_group() -> Result<()> {
     assert!(result.is_err());
     assert_eq!(
         result.err().unwrap().to_string(),
-        "Meta category groups cannot be deleted"
+        "The Credit payment category group cannot be deleted"
     );
 
-    // Make sure it hasn't been deleted
     let groups = service.fetch_category_groups()?;
     assert_eq!(groups.len(), 1);
     Ok(())
