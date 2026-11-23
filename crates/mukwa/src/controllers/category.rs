@@ -38,6 +38,7 @@ impl CategoryController {
             state: Rc::new(category_state.as_weak().unwrap()),
         };
 
+        category_state.set_current_month(ZonedDateTime::now().date().into());
         controller.load_state()?;
 
         category_state.on_edit_budget_target({
@@ -114,7 +115,7 @@ impl CategoryController {
             move |date| {
                 let category_state = category_state.unwrap();
                 category_state.set_current_month(date);
-                if let Err(err) = controller.load_budgets() {
+                if let Err(err) = controller.load_state() {
                     warn!("Failed to load budgets: {err}")
                 }
             }
@@ -123,19 +124,7 @@ impl CategoryController {
         category_state.on_load_state({
             let controller = controller.clone();
             move || {
-                if let Err(err) = controller
-                    .load_category_groups()
-                    .context("Failed to load category groups")
-                {
-                    warn!("{}", err.report());
-                }
-                if let Err(err) = controller
-                    .load_categories()
-                    .context("Failed to load categories")
-                {
-                    warn!("{}", err.report());
-                }
-                if let Err(err) = controller.load_budgets().context("Failed to load budgets") {
+                if let Err(err) = controller.load_state().context("Failed to load state") {
                     warn!("{}", err.report());
                 }
             }
@@ -369,8 +358,8 @@ impl CategoryController {
     fn load_state(&self) -> crate::Result<()> {
         let mut categories = self.service.fetch_categories()?;
         let mut category_groups = self.service.fetch_category_groups()?;
-        categories.sort_by(|a, b| a.id.cmp(&b.id).reverse());
-        category_groups.sort_by(|a, b| a.id.cmp(&b.id).reverse());
+        categories.sort_by_key(|a| a.id);
+        category_groups.sort_by_key(|a| a.id);
 
         let category_options: Vec<ui::ComboBoxItem> = categories
             .iter()
@@ -383,9 +372,10 @@ impl CategoryController {
         let category_groups: Vec<ui::CategoryGroup> =
             category_groups.iter().map(|c| c.into()).collect();
 
+        let month = Date::try_from(self.state.get_current_month())?;
         let budgets: Vec<ui::Budget> = self
             .service
-            .fetch_budgets_by_month(ZonedDateTime::now().date())?
+            .fetch_or_init_budgets(month)?
             .iter()
             .map(|b| b.into())
             .collect();
@@ -402,43 +392,6 @@ impl CategoryController {
             .set_category_options(ModelRc::new(VecModel::from(category_options)));
         self.state
             .set_current_month(ZonedDateTime::now().date().into());
-        Ok(())
-    }
-
-    fn load_categories(&self) -> crate::Result<()> {
-        let categories: Vec<ui::Category> = self
-            .service
-            .fetch_categories()?
-            .iter()
-            .map(|c| c.into())
-            .collect();
-        self.state
-            .set_categories(ModelRc::new(Rc::new(VecModel::from(categories))));
-        Ok(())
-    }
-
-    fn load_category_groups(&self) -> crate::Result<()> {
-        let groups: Vec<ui::CategoryGroup> = self
-            .service
-            .fetch_category_groups()?
-            .iter()
-            .map(|c| c.into())
-            .collect();
-        self.state
-            .set_category_groups(ModelRc::new(Rc::new(VecModel::from(groups))));
-        Ok(())
-    }
-
-    fn load_budgets(&self) -> crate::Result<()> {
-        let month = Date::try_from(self.state.get_current_month())?;
-        let budgets: Vec<ui::Budget> = self
-            .service
-            .fetch_or_init_budgets(month)?
-            .iter()
-            .map(|b| b.into())
-            .collect();
-        self.state
-            .set_budgets(ModelRc::new(Rc::new(VecModel::from(budgets))));
         Ok(())
     }
 
@@ -476,17 +429,14 @@ impl CategoryController {
     fn delete_category(&self, id: &str) -> crate::Result<Uuid> {
         let id = Uuid::parse_str(id)?;
         self.service.delete_category(id)?;
-        self.load_categories()?;
-        self.load_budgets()?;
+        self.load_state()?;
         Ok(id)
     }
 
     fn delete_category_group(&self, id: &str) -> crate::Result<Uuid> {
         let id = Uuid::parse_str(id)?;
         self.service.delete_category_group(id)?;
-        self.load_budgets()?;
-        self.load_category_groups()?;
-        self.load_categories()?;
+        self.load_state()?;
         Ok(id)
     }
 
@@ -544,9 +494,7 @@ impl CategoryController {
         let budget_id = Uuid::parse_str(id)?;
         let amount = Money::from_str(amount)?;
         self.service.update_budget(budget_id, amount)?;
-        self.load_budgets()?;
-        self.load_categories()?;
-        self.load_category_groups()?;
+        self.load_state()?;
         Ok(())
     }
 
@@ -554,9 +502,7 @@ impl CategoryController {
         let id = Uuid::parse_str(id)?;
         let group_id = Uuid::parse_str(group_id)?;
         self.service.move_category(id, group_id)?;
-        self.load_categories()?;
-        self.load_category_groups()?;
-        self.load_budgets()?;
+        self.load_state()?;
         Ok(())
     }
 
@@ -575,24 +521,21 @@ impl CategoryController {
             .get_category_options()
             .push_row(category.clone().into())?;
         self.state.get_categories().push_row(category.into())?;
-        self.load_budgets()?;
+        self.load_state()?;
         Ok(id)
     }
 
     fn update_category(&self, id: &str, title: &str) -> crate::Result<Uuid> {
         let id = Uuid::parse_str(id)?;
         self.service.update_category(id, title)?;
-        self.load_categories()?;
-        self.load_budgets()?;
+        self.load_state()?;
         Ok(id)
     }
 
     fn update_category_group(&self, id: &str, title: &str) -> crate::Result<Uuid> {
         let id = Uuid::parse_str(id)?;
         self.service.update_category_group(id, title)?;
-        self.load_categories()?;
-        self.load_category_groups()?;
-        self.load_budgets()?;
+        self.load_state()?;
         Ok(id)
     }
 
@@ -642,14 +585,14 @@ mod test {
         assert_eq!(category_options.len(), 2);
         assert_eq!(category_groups.len(), 3); // Plus the default credit payments group
         assert_eq!(categories.len(), 2);
-        assert_eq!(category_groups[0].title, "Needs");
         assert_eq!(category_groups[1].title, "Bills");
-        assert_eq!(categories[0].title, "Water");
-        assert_eq!(categories[1].title, "Groceries");
-        assert_eq!(category_options[0].text, "Water");
-        assert_eq!(category_options[0].value, water.id.to_shared_string());
-        assert_eq!(category_options[1].text, "Groceries");
-        assert_eq!(category_options[1].value, groceries.id.to_shared_string());
+        assert_eq!(category_groups[2].title, "Needs");
+        assert_eq!(categories[0].title, "Groceries");
+        assert_eq!(categories[1].title, "Water");
+        assert_eq!(category_options[1].text, "Water");
+        assert_eq!(category_options[1].value, water.id.to_shared_string());
+        assert_eq!(category_options[0].text, "Groceries");
+        assert_eq!(category_options[0].value, groceries.id.to_shared_string());
 
         let current_month = category_state.get_current_month();
         assert_eq!(current_month, ZonedDateTime::now().date().into());
@@ -725,13 +668,13 @@ mod test {
             month: Some(date(2020, 1, 1)),
         })?;
         let window = MainWindow::new()?;
-        bind(&window, &service)?;
+        CategoryController::bind(&window, &service)?;
 
         let category_state = window.global::<CategoryState>();
         category_state.set_current_month(date(2020, 1, 1).into());
         category_state.invoke_edit_budget(budget.id.to_shared_string(), "500".to_shared_string());
-        let budgets = category_state.get_budgets();
-        let budget = budgets.iter().next().unwrap();
+        let budgets: Vec<_> = category_state.get_budgets().iter().collect();
+        let budget = &budgets[0];
         assert_eq!(budget.amount, Money::new(500).to_shared_string());
         Ok(())
     }
