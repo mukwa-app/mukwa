@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
-use i_slint_backend_testing::{ElementHandle, ElementRoot};
+use i_slint_backend_testing::{
+    ElementHandle, ElementRoot, send_key_combo, send_keyboard_string_sequence,
+};
 use jiff::civil::Date;
 use jiff::{ToSpan, ZonedDateTime};
-use mukwa::testing::{self, find_by_accessible_label, find_by_type_name};
+use mukwa::testing::{self, ElementHandleExt, find_by_accessible_label, find_by_type_name};
 use mukwa::ui::{CategoryState, MainWindow, Settings};
 use mukwa::{SettingsStore, controllers};
 use mukwa_core::create_test_db;
@@ -76,6 +78,41 @@ fn create_budget_target(app: &MainWindow, amount: Money) {
         .next()
         .unwrap()
         .mock_single_click(PointerEventButton::Left);
+}
+
+#[test]
+fn rename_category_group() -> Result<()> {
+    let (app, service) = setup()?;
+    service.create_category_group("Bills")?;
+    let state: CategoryState = app.global();
+    state.invoke_load_state();
+
+    let root_element = app.root_element();
+    let group_items = root_element.find_all_by_type_name("CategoryGroupItem");
+    let text_field = group_items[1].find_by_id("CategoryGroupItem::group-text-field");
+    text_field.click();
+
+    // Clear the text field
+    text_field.click();
+    text_field.click();
+    send_key_combo(&app, [Key::Delete]);
+    send_keyboard_string_sequence(&app, "Wants");
+    send_key_combo(&app, [Key::Return]);
+
+    let groups: Vec<_> = state.get_category_groups().iter().collect();
+    assert_eq!(groups[1].title, "Wants");
+
+    let group_items = root_element.find_all_by_type_name("CategoryGroupItem");
+    assert!(
+        group_items[1]
+            .find_by_id("CategoryGroupItem::group-text-field")
+            .query_descendants()
+            .match_accessible_label("Wants")
+            .find_first()
+            .is_some(),
+        "Text in text field did not change"
+    );
+    Ok(())
 }
 
 #[test]

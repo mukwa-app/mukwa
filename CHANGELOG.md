@@ -3,6 +3,7 @@
 - Added key bindings.
   - `delete` or `backspace`: delete selected transactions.
 - Added scrollbars.
+- Fixed the app crashing when trying to rename a category group.
 
 ## 0.4.0 - 2026-11-17
 
