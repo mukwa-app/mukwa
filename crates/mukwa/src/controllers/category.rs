@@ -590,7 +590,6 @@ impl CategoryController {
     fn update_category_group(&self, id: &str, title: &str) -> crate::Result<Uuid> {
         let id = Uuid::parse_str(id)?;
         self.service.update_category_group(id, title)?;
-        self.service.update_category(id, title)?;
         self.load_categories()?;
         self.load_category_groups()?;
         self.load_budgets()?;
