@@ -7,7 +7,7 @@ use mukwa_core::Money;
 use mukwa_core::auto_update::Manifest;
 use mukwa_core::error::ErrorExt;
 use mukwa_core::migrator::Migrator;
-use mukwa_core::service::{AccountType, Service};
+use mukwa_core::service::{AccountType, GroupKind, Service};
 use rusqlite::Connection;
 use std::collections::HashSet;
 use std::fmt::Write;
@@ -130,7 +130,10 @@ impl ServiceFaker {
 
     fn fill_categories(&self, service: &Service) -> mukwa_core::Result<()> {
         let groups = service.fetch_category_groups()?;
-        let groups: Vec<_> = groups.iter().filter(|g| !g.is_meta).collect();
+        let groups: Vec<_> = groups
+            .iter()
+            .filter(|g| g.kind == GroupKind::Standard)
+            .collect();
         for title in ServiceFaker::CATEGORY_TITLES {
             if fastrand::bool() {
                 continue;
