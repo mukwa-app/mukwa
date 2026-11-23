@@ -4,7 +4,7 @@
 // Tests to make sure the migrations don't break the user's database.
 
 use jiff::ZonedDateTime;
-use mukwa_core::service::{AccountType, Service, TransactionKind};
+use mukwa_core::service::{AccountType, GroupKind, Service, TransactionKind};
 use mukwa_core::{Error, Money, Result, migrator::Migrator};
 use rusqlite::{Connection, params};
 use std::str::FromStr;
@@ -76,7 +76,7 @@ fn add_credit_payments_meta_group() -> Result<()> {
     let group = &groups[0];
 
     assert_eq!(group.title, "Credit payments");
-    assert!(group.is_meta);
+    assert!(group.kind == GroupKind::CreditPayment);
     Ok(())
 }
 

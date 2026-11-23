@@ -199,7 +199,7 @@ component CategoryGroupItem {
 
     TouchArea {
         pointer-event(event) => {
-            if (event.button == PointerEventButton.right && !category-group.is-meta) {
+            if (event.button == PointerEventButton.right && category-group.kind != credit-payment) {
                 context-menu.show();
             }
         }
@@ -309,15 +309,15 @@ component CategoryGroupItem {
                 InlineTextField {
                     text: category-group.title;
                     font-weight: FontWeight.semi-bold;
-                    enabled: !category-group.is-meta;
+                    enabled: category-group.kind != credit-payment;
                     accepted(value) => CategoryState.update-category-group(category-group.id, value);
                 }
 
                 category-button := IconButton {
                     icon: Icons.plus;
                     theme: ghost;
-                    enabled: !category-group.is-meta;
-                    visible: !category-group.is-meta;
+                    enabled: category-group.kind != credit-payment;
+                    visible: category-group.kind != credit-payment;
                     clicked => {
                         category-popup.show();
                     }
