@@ -38,31 +38,7 @@ impl CategoryController {
             state: Rc::new(category_state.as_weak().unwrap()),
         };
 
-        let categories = service.fetch_categories()?;
-        let category_list: Vec<ui::Category> = categories.iter().map(|c| c.into()).collect();
-        let category_options: Vec<ui::ComboBoxItem> = categories.iter().map(|c| c.into()).collect();
-        let category_groups = service.fetch_category_groups()?;
-        let category_group_list: Vec<ui::CategoryGroup> =
-            category_groups.iter().map(|c| c.into()).collect();
-
-        let category_model = Rc::new(VecModel::from(category_list));
-        let category_group_model = Rc::new(VecModel::from(category_group_list));
-        let category_options_model = Rc::new(VecModel::from(category_options));
-
-        let budgets_list: Vec<ui::Budget> = service
-            .fetch_budgets_by_month(ZonedDateTime::now().date())?
-            .iter()
-            .map(|b| b.into())
-            .collect();
-        let budget_model = Rc::new(VecModel::from(budgets_list));
-
-        category_state.set_categories(ModelRc::new(category_model));
-        category_state.set_category_groups(ModelRc::new(category_group_model));
-        category_state.set_budgets(ModelRc::new(budget_model));
-        // We can't map arrays in slint so we have to maintain duplicate arrays for comboboxes
-        // see <https://github.com/slint-ui/slint/issues/1328>
-        category_state.set_category_options(ModelRc::new(category_options_model));
-        category_state.set_current_month(ZonedDateTime::now().date().into());
+        controller.load_state()?;
 
         category_state.on_edit_budget_target({
             let controller = controller.clone();
@@ -390,6 +366,45 @@ impl CategoryController {
         Ok(controller)
     }
 
+    fn load_state(&self) -> crate::Result<()> {
+        let mut categories = self.service.fetch_categories()?;
+        let mut category_groups = self.service.fetch_category_groups()?;
+        categories.sort_by(|a, b| a.id.cmp(&b.id).reverse());
+        category_groups.sort_by(|a, b| a.id.cmp(&b.id).reverse());
+
+        let category_options: Vec<ui::ComboBoxItem> = categories
+            .iter()
+            .map(|c| ui::ComboBoxItem {
+                text: c.title.to_shared_string(),
+                value: c.id.to_shared_string(),
+            })
+            .collect();
+        let categories: Vec<ui::Category> = categories.iter().map(|c| c.into()).collect();
+        let category_groups: Vec<ui::CategoryGroup> =
+            category_groups.iter().map(|c| c.into()).collect();
+
+        let budgets: Vec<ui::Budget> = self
+            .service
+            .fetch_budgets_by_month(ZonedDateTime::now().date())?
+            .iter()
+            .map(|b| b.into())
+            .collect();
+
+        self.state
+            .set_categories(ModelRc::new(VecModel::from(categories)));
+        self.state
+            .set_category_groups(ModelRc::new(VecModel::from(category_groups)));
+        self.state
+            .set_budgets(ModelRc::new(VecModel::from(budgets)));
+        // We can't map arrays in slint so we have to maintain duplicate arrays for comboboxes
+        // see <https://github.com/slint-ui/slint/issues/1328>
+        self.state
+            .set_category_options(ModelRc::new(VecModel::from(category_options)));
+        self.state
+            .set_current_month(ZonedDateTime::now().date().into());
+        Ok(())
+    }
+
     fn load_categories(&self) -> crate::Result<()> {
         let categories: Vec<ui::Category> = self
             .service
@@ -609,10 +624,34 @@ mod test {
     }
 
     #[test]
-    fn bind_properties() -> crate::Result<()> {
-        let (_, _, window) = setup()?;
+    fn load_values_on_init() -> crate::Result<()> {
+        let service = Service::open_in_memory()?;
+        let bills = service.create_category_group("Bills")?;
+        let needs = service.create_category_group("Needs")?;
+        let groceries = service.create_category("Groceries", needs.id)?;
+        let water = service.create_category("Water", bills.id)?;
 
-        let category_state = window.global::<CategoryState>();
+        i_slint_backend_testing::init_no_event_loop();
+        let window = MainWindow::new()?;
+        CategoryController::bind(&window, &service)?;
+
+        let category_state: CategoryState = window.global();
+        let category_options: Vec<_> = category_state.get_category_options().iter().collect();
+        let categories: Vec<_> = category_state.get_categories().iter().collect();
+        let category_groups: Vec<_> = category_state.get_category_groups().iter().collect();
+
+        assert_eq!(category_options.len(), 2);
+        assert_eq!(category_groups.len(), 3); // Plus the default credit payments group
+        assert_eq!(categories.len(), 2);
+        assert_eq!(category_groups[0].title, "Needs");
+        assert_eq!(category_groups[1].title, "Bills");
+        assert_eq!(categories[0].title, "Water");
+        assert_eq!(categories[1].title, "Groceries");
+        assert_eq!(category_options[0].text, "Water");
+        assert_eq!(category_options[0].value, water.id.to_shared_string());
+        assert_eq!(category_options[1].text, "Groceries");
+        assert_eq!(category_options[1].value, groceries.id.to_shared_string());
+
         let current_month = category_state.get_current_month();
         assert_eq!(current_month, ZonedDateTime::now().date().into());
         Ok(())
