@@ -70,11 +70,18 @@ pub struct Category {
     pub account_id: Option<Uuid>,
 }
 
+#[derive(PartialOrd, PartialEq, Debug, Default, Clone, Copy)]
+pub enum GroupKind {
+    #[default]
+    Standard,
+    CreditPayment,
+}
+
 #[derive(PartialOrd, PartialEq, Debug, Default, Clone)]
 pub struct CategoryGroup {
     pub id: Uuid,
     pub title: String,
-    pub is_meta: bool,
+    pub kind: GroupKind,
 }
 
 #[derive(PartialOrd, PartialEq, Debug, Clone, Copy, Eq, Ord)]
@@ -163,11 +170,16 @@ impl<'a> TryFrom<&Row<'a>> for CategoryGroup {
         let id: String = value.get("id")?;
         let title: String = value.get("title")?;
         let is_meta: bool = value.get("is_meta")?;
+        let kind = if is_meta {
+            GroupKind::CreditPayment
+        } else {
+            GroupKind::Standard
+        };
 
         Ok(CategoryGroup {
             id: Uuid::parse_str(&id)?,
             title: title.to_string(),
-            is_meta,
+            kind,
         })
     }
 }
@@ -627,8 +639,10 @@ impl Service {
     /// Deletes a category group from the database
     pub fn delete_category_group(&self, id: Uuid) -> crate::Result<()> {
         let group = self.get_category_group(id)?;
-        if group.is_meta {
-            return Err(Error::new("Meta category groups cannot be deleted"));
+        if group.kind == GroupKind::CreditPayment {
+            return Err(Error::new(
+                "The Credit payment category group cannot be deleted",
+            ));
         }
 
         let connection = self.connection();
@@ -953,7 +967,7 @@ impl Service {
             let groups = self.fetch_category_groups()?;
             let credit_group = groups
                 .iter()
-                .find(|group| group.is_meta)
+                .find(|group| group.kind == GroupKind::CreditPayment)
                 .ok_or(Error::new("Credit payments group does not exist"))?;
 
             let connection = self.connection();
@@ -1498,7 +1512,7 @@ impl Service {
         let groups = self.fetch_category_groups()?;
         let credit_group = groups
             .iter()
-            .find(|group| group.is_meta)
+            .find(|group| group.kind == GroupKind::CreditPayment)
             .ok_or(Error::new("Credit payments group does not exist"))?;
 
         let accounts = self.fetch_accounts()?;

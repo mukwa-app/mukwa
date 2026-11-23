@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
 //! Slint auto generated code.
-use mukwa_core::Money;
+use mukwa_core::{Money, service};
 use slint::{SharedString, ToSharedString};
 
 slint::include_modules!();
@@ -125,7 +125,16 @@ impl From<mukwa_core::service::CategoryGroup> for CategoryGroup {
         Self {
             id: value.id.to_shared_string(),
             title: value.title.to_shared_string(),
-            is_meta: value.is_meta,
+            kind: value.kind.into(),
+        }
+    }
+}
+
+impl From<service::GroupKind> for GroupKind {
+    fn from(value: service::GroupKind) -> Self {
+        match value {
+            service::GroupKind::CreditPayment => Self::CreditPayment,
+            service::GroupKind::Standard => Self::Standard,
         }
     }
 }
@@ -135,7 +144,7 @@ impl From<&mukwa_core::service::CategoryGroup> for CategoryGroup {
         Self {
             id: value.id.to_shared_string(),
             title: value.title.to_shared_string(),
-            is_meta: value.is_meta,
+            kind: value.kind.into(),
         }
     }
 }

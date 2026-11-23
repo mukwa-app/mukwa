@@ -6,7 +6,7 @@ use jiff::{ToSpan, ZonedDateTime};
 use mukwa_core::Result;
 use mukwa_core::migrator::Migrator;
 use mukwa_core::service::{
-    AccountType, Category, CreateBudgetOpts, Service, TransactionKind, TransactionType,
+    AccountType, Category, CreateBudgetOpts, GroupKind, Service, TransactionKind, TransactionType,
 };
 use mukwa_core::{Money, create_test_db};
 use rstest::rstest;
@@ -186,19 +186,21 @@ fn create_category_group() -> mukwa_core::Result<()> {
 }
 
 #[test]
-fn cannot_delete_meta_category_group() -> Result<()> {
+fn cannot_delete_credit_payment_category_group() -> Result<()> {
     let service = Service::open_in_memory()?;
     let groups = service.fetch_category_groups()?;
     assert_eq!(groups.len(), 1);
-    let credit_payments = groups.iter().find(|group| group.is_meta).unwrap();
+    let credit_payments = groups
+        .iter()
+        .find(|group| group.kind == GroupKind::CreditPayment)
+        .unwrap();
     let result = service.delete_category_group(credit_payments.id);
     assert!(result.is_err());
     assert_eq!(
         result.err().unwrap().to_string(),
-        "Meta category groups cannot be deleted"
+        "The Credit payment category group cannot be deleted"
     );
 
-    // Make sure it hasn't been deleted
     let groups = service.fetch_category_groups()?;
     assert_eq!(groups.len(), 1);
     Ok(())

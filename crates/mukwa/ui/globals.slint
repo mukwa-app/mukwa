@@ -9,6 +9,11 @@ export enum AccountType {
     credit,
 }
 
+export enum GroupKind {
+    standard,
+    credit-payment,
+}
+
 export struct Account {
     id: string,
     name: string,
@@ -26,7 +31,7 @@ export struct Category {
 export struct CategoryGroup {
     id: string,
     title: string,
-    is-meta: bool,
+    kind: GroupKind,
 }
 
 export struct Budget {
