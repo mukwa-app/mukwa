@@ -1,9 +1,10 @@
-## (unreleased)
+## 0.4.1 - 2026-11-24
 
-- Added key bindings.
-  - `delete` or `backspace`: delete selected transactions.
-- Added scrollbars.
+- Added new keyboard shortcuts.
+    - `delete` or `backspace`: Delete selected transactions.
+- Added scrollbars to the comboboxes, transaction table and spending page.
 - Fixed the app crashing when trying to rename a category group.
+- Fixed a bug where money moved from a category to a credit payment category was more than the assigned amount.
 
 ## 0.4.0 - 2026-11-17
 
@@ -12,7 +13,7 @@
 - Budgets now show a negative balance when overspent instead of showing 0.
 - Added a button to close the budget target sidebar.
 - Added a button to audit an account. Auditing an account lets you confirm whether the bank account balance
-  matches the account balance in Mukwa. If it does then then the account is audited, if not then a correction
+  matches the account balance in Mukwa. If it does then the account is audited, if not then a correction
   transaction can be made which will make the two account balances match. Audited transactions are hidden
   so that you don't have to worry about them.
 - Fixed a bug where the pie chart was not drawing when there were no transactions in the current month.
