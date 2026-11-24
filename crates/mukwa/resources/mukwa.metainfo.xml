@@ -46,6 +46,17 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.4.1" date="2026-11-24">
+          <url type="details">https://github.com/snubwoody/mukwa/blob/main/CHANGELOG.md#041---2026-11-24</url>
+          <description>
+              <ul>
+                    <li>Added new keyboard shortcuts: `delete` or `backspace` deletes selected transactions.</li>
+                    <li>Added scrollbars to the comboboxes, transaction table and spending page.</li>
+                    <li>Fixed the app crashing when trying to rename a category group.</li>
+                    <li>Fixed a bug where money moved from a category to a credit payment category was more than the assigned amount.</li>
+              </ul>
+          </description>
+        </release>
         <release version="0.4.0" date="2026-11-17">
           <url type="details">https://github.com/snubwoody/mukwa/blob/main/CHANGELOG.md#040---2026-11-17</url>
           <description>
