@@ -369,8 +369,8 @@ impl CategoryController {
     fn load_state(&self) -> crate::Result<()> {
         let mut categories = self.service.fetch_categories()?;
         let mut category_groups = self.service.fetch_category_groups()?;
-        categories.sort_by(|a, b| a.id.cmp(&b.id).reverse());
-        category_groups.sort_by(|a, b| a.id.cmp(&b.id).reverse());
+        categories.sort_by_key(|a| a.id);
+        category_groups.sort_by_key(|a| a.id);
 
         let category_options: Vec<ui::ComboBoxItem> = categories
             .iter()
@@ -642,14 +642,14 @@ mod test {
         assert_eq!(category_options.len(), 2);
         assert_eq!(category_groups.len(), 3); // Plus the default credit payments group
         assert_eq!(categories.len(), 2);
-        assert_eq!(category_groups[0].title, "Needs");
         assert_eq!(category_groups[1].title, "Bills");
-        assert_eq!(categories[0].title, "Water");
-        assert_eq!(categories[1].title, "Groceries");
-        assert_eq!(category_options[0].text, "Water");
-        assert_eq!(category_options[0].value, water.id.to_shared_string());
-        assert_eq!(category_options[1].text, "Groceries");
-        assert_eq!(category_options[1].value, groceries.id.to_shared_string());
+        assert_eq!(category_groups[2].title, "Needs");
+        assert_eq!(categories[1].title, "Water");
+        assert_eq!(categories[0].title, "Groceries");
+        assert_eq!(category_options[1].text, "Water");
+        assert_eq!(category_options[1].value, water.id.to_shared_string());
+        assert_eq!(category_options[0].text, "Groceries");
+        assert_eq!(category_options[0].value, groceries.id.to_shared_string());
 
         let current_month = category_state.get_current_month();
         assert_eq!(current_month, ZonedDateTime::now().date().into());
