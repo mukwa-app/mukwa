@@ -1413,22 +1413,24 @@ impl Service {
         let total_assigned = self.total_assigned(category_id, date)?;
         let total_spent = self.total_spent_in_category(category_id, date)?;
         let mut available = total_assigned - total_spent;
+
         let category = self.get_category(category_id)?;
         if let Some(account_id) = category.account_id {
+            let categories = self.fetch_categories()?;
+            // TODO: how does this affect plain expenses without a category
             let transactions = self.fetch_transactions()?;
-            let credit_expenses: Money = transactions
-                .iter()
-                .filter(|t| {
-                    t.transaction_type() == TransactionType::Expense
-                        && t.kind == TransactionKind::Regular
-                })
-                .filter(|t| t.sender_id == Some(account_id))
-                .filter(|t| (t.date.year(), t.date.month()) <= (date.year(), date.month()))
-                .map(|t| t.amount)
-                .sum();
-            available += credit_expenses;
+            for c in categories.iter().filter(|c| c.account_id.is_none()) {
+                let expenses: Money = transactions
+                    .iter()
+                    .filter(|t| t.sender_id == Some(account_id))
+                    .filter(|t| t.category_id == Some(c.id))
+                    .filter(|t| (t.date.year(), t.date.month()) <= (date.year(), t.date.month()))
+                    .map(|t| t.amount)
+                    .sum();
+                let total_assigned = self.total_assigned(c.id, date)?;
+                available += expenses.min(total_assigned);
+            }
         }
-
         Ok(available)
     }
 

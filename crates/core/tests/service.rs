@@ -1246,6 +1246,35 @@ fn credit_income_does_not_affect_available_to_spend() -> Result<()> {
 }
 
 #[test]
+fn move_money_from_category_to_credit_category() -> Result<()> {
+    let service = Service::open_in_memory()?;
+    let credit_account = service.create_account("", AccountType::Credit)?;
+    let group = service.create_category_group("")?;
+    let category = service.create_category("", group.id)?;
+    service.create_budget(CreateBudgetOpts {
+        amount: Some(Money::new(30)),
+        category_id: category.id,
+        ..Default::default()
+    })?;
+
+    service
+        .create_expense()
+        .account(credit_account.id)
+        .category(category.id)
+        .amount(Money::new(50))
+        .submit()?;
+
+    let categories = service.fetch_categories()?;
+    let credit_category = categories.iter().find(|c| c.account_id.is_some()).unwrap();
+
+    let available = service.available_to_spend(category.id, ZonedDateTime::now().date())?;
+    assert_eq!(available, Money::new(-20));
+    let available = service.available_to_spend(credit_category.id, ZonedDateTime::now().date())?;
+    assert_eq!(available, Money::new(30));
+    Ok(())
+}
+
+#[test]
 fn available_to_spend_credit_categories() -> Result<()> {
     struct TestCase {
         balance: (Date, Money),
@@ -1264,13 +1293,13 @@ fn available_to_spend_credit_categories() -> Result<()> {
             payments: vec![(now, Money::new(50))],
             expected: (now, Money::new(-50)),
         },
-        // Fully paid
+        // Overspent payment
         TestCase {
             balance: (now, Money::ZERO),
             expenses: vec![(now, Money::new(50))],
             budgets: vec![],
             payments: vec![(now, Money::new(50))],
-            expected: (now, Money::ZERO),
+            expected: (now, Money::new(-50)),
         },
         // Future transactions don't affect past budgets
         TestCase {
