@@ -1293,13 +1293,13 @@ fn available_to_spend_credit_categories() -> Result<()> {
             payments: vec![(now, Money::new(50))],
             expected: (now, Money::new(-50)),
         },
-        // Fully paid
+        // Overspent payment
         TestCase {
             balance: (now, Money::ZERO),
             expenses: vec![(now, Money::new(50))],
             budgets: vec![],
             payments: vec![(now, Money::new(50))],
-            expected: (now, Money::ZERO),
+            expected: (now, Money::new(-50)),
         },
         // Future transactions don't affect past budgets
         TestCase {
