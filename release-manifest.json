@@ -1,6 +1,33 @@
 {
   "releases": [
     {
+      "version": "0.4.1",
+      "published_at": "2026-11-24T20:29:49Z",
+      "artifacts": {
+        "windows_x86_64_exe": {
+          "download_url": "https://github.com/snubwoody/mukwa/releases/download/v0.4.1/Mukwa-x86_64-Setup.exe",
+          "digest": "07372088d46e13600b4298b5491939378b5f94ee18131a52f9734ee4971d4166"
+        },
+        "windows_aarch64_exe": {
+          "download_url": "https://github.com/snubwoody/mukwa/releases/download/v0.4.1/Mukwa-aarch64-Setup.exe",
+          "digest": "61a5711beaf430ec12ac0783335186c98d1475ad3b4a1011c0f341a27cc574a4"
+        },
+        "linux_x86_64_appimage": {
+          "download_url": "https://github.com/snubwoody/mukwa/releases/download/v0.4.1/Mukwa-x86_64.AppImage",
+          "digest": "c959fe4e0392745323b2e81ea25dec2d7ad060f5f40623976ccdb8b55da3760a"
+        },
+        "linux_x86_64_tarball": {
+          "download_url": "https://github.com/snubwoody/mukwa/releases/download/v0.4.1/mukwa-x86_64.tar.gz",
+          "digest": "8b898d61a9c4c7434c57050e865412a56abf468aab4e4fd623777de7d494c98e"
+        },
+        "linux_x86_64_deb": {
+          "download_url": "https://github.com/snubwoody/mukwa/releases/download/v0.4.1/Mukwa-x86_64.deb",
+          "digest": "c149f42600974768adbefbd5dea800a3b9554bdfb8274692dd568e93e0cf5e88"
+        }
+      },
+      "prerelease": false
+    },
+    {
       "version": "0.4.0",
       "published_at": "2026-11-17T16:37:56Z",
       "artifacts": {
