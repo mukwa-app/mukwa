@@ -8,8 +8,10 @@
     <a href="https://mukwa.wakunguma.com/docs/getting-started">Docs</a> |
     <a href="https://github.com/mukwa-app/mukwa/blob/main/CONTRIBUTING.md">Contributing</a>
 </p>
-<img alt="Mukwa" width="100%" src="./assets/screenshots/analytics.png">
 
+![Analytics screenshot](./assets/screenshots/analytics.png)
+![Budgeting screenshot](./assets/screenshots/budgeting.png)
+![Transactions screenshot](./assets/screenshots/transactions.png)
 
 ## Overview
 
