@@ -9,13 +9,12 @@
     <a href="https://github.com/mukwa-app/mukwa/blob/main/CONTRIBUTING.md">Contributing</a>
 </p>
 
+
+Mukwa is an open source, local-first personal finance app. All data is stored on your device, no cloud and no accounts. It is written in Rust and built using Slint.
+
 ![Analytics screenshot](./assets/screenshots/analytics.png)
 ![Budgeting screenshot](./assets/screenshots/budgeting.png)
 ![Transactions screenshot](./assets/screenshots/transactions.png)
-
-## Overview
-
-Mukwa is a free and open source personal finance app. It is designed to be simple to use and get out of your way. Mukwa is "local first", meaning all your sensitive financial data is stored locally on your device, no internet connections, no data sent to the cloud.
 
 ## Installation
 
