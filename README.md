@@ -4,8 +4,12 @@
   <span>Mukwa</span>
 </h1>
 <p align="center">
-  <img alt="Mukwa" width="100%" src="./assets/screenshots/analytics.png">
+    <a href="https://mukwa.wakunguma.com">Website</a> |
+    <a href="https://mukwa.wakunguma.com/docs/getting-started">Docs</a> |
+    <a href="https://github.com/mukwa-app/mukwa/blob/main/CONTRIBUTING.md">Contributing</a>
 </p>
+<img alt="Mukwa" width="100%" src="./assets/screenshots/analytics.png">
+
 
 ## Overview
 
