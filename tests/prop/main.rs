@@ -3,18 +3,17 @@
 
 //! Property based fuzz testing
 
-#![allow(unused)]
 use clap::Parser;
 use fastrand::Rng;
 use i_slint_backend_testing::{
     AccessibleRole, ElementHandle, ElementRoot, send_key_combo, send_keyboard_string_sequence,
 };
-use mukwa::ui::{self, MainWindow, TransactionState};
+use mukwa::ui::{self, CategoryState, GroupKind, MainWindow, TransactionState};
 use mukwa::ui::{AccountState, Settings};
 use mukwa::{SettingsStore, controllers, testing::*};
+use mukwa_core::Money;
 use mukwa_core::create_test_db;
 use mukwa_core::service::Service;
-use mukwa_core::{Currency, Money, fmt::CurrencyFormatter};
 use slint::{
     ComponentHandle, Model, SharedString, ToSharedString,
     platform::{Key, PointerEventButton},
@@ -22,7 +21,7 @@ use slint::{
 use std::fmt::Debug;
 use std::panic;
 use std::{fs, path::PathBuf};
-use tracing::{debug, info, span, trace, trace_span};
+use tracing::{debug, trace, trace_span};
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -34,6 +33,55 @@ enum Action {
     CreateAccount(CreateAccount),
     EditOutflow(EditOutflow),
     EditNote(EditNote),
+    CreateCategoryGroup(CreateCategoryGroup),
+}
+
+#[derive(Debug, Clone)]
+struct CreateCategoryGroup;
+
+impl CreateCategoryGroup {
+    fn execute(&self, app: &MainWindow, rng: &mut Rng) {
+        let _span = trace_span!("CreateCategoryGroup").entered();
+        let root_element = app.root_element();
+        root_element.find_by_accessible_label("Spending").click();
+        root_element
+            .find_by_accessible_label("New category group")
+            .click();
+
+        let name = gen_string(rng);
+        send_keyboard_string_sequence(app, &name);
+
+        let category_state: CategoryState = app.global();
+        let groups_len = category_state.get_category_groups().iter().len();
+        let cancel = rng.f32() <= 0.3;
+        if cancel {
+            root_element.find_by_accessible_label("Cancel").click();
+            let groups: Vec<_> = category_state.get_category_groups().iter().collect();
+            trace!("Cancelled create category group form");
+            assert_eq!(groups.len(), groups_len);
+            return;
+        }
+
+        root_element.find_by_accessible_label("Confirm").click();
+        let groups: Vec<_> = category_state.get_category_groups().iter().collect();
+        assert_eq!(groups.len(), groups_len + 1);
+        let group = &groups[groups.len() - 1];
+        assert_eq!(group.title, name);
+        assert_eq!(group.kind, GroupKind::Standard);
+
+        let group_items = root_element.find_all_by_type_name("CategoryGroupItem");
+        let new_item = group_items.last().unwrap();
+        assert_eq!(
+            new_item
+                .find_by_id("CategoryGroupItem::group-text-field")
+                .find_by_type_name("Text")
+                .accessible_label()
+                .unwrap(),
+            name,
+        );
+
+        trace!(name = name, "Created category group");
+    }
 }
 
 /// Creates a transaction and verifies its creating using the following steps:
@@ -48,6 +96,11 @@ impl CreateTransaction {
     fn execute(&self, app: &MainWindow, rng: &mut Rng) {
         // TODO: test that the new transaction is visible
         let _span = trace_span!("CreateTransaction").entered();
+        let root_element = app.root_element();
+        root_element
+            .find_by_accessible_label("All accounts")
+            .click();
+
         let transaction_state: TransactionState = app.global();
         let amount = Money::new(rng.i64(0..));
         let transaction_page = ElementHandle::find_by_element_type_name(app, "TransactionPage")
@@ -211,6 +264,10 @@ impl EditNote {
     fn execute(&self, app: &MainWindow, rng: &mut Rng) {
         let _span = trace_span!("EditNote").entered();
         let root_element = app.root_element();
+        root_element
+            .find_by_accessible_label("All accounts")
+            .click();
+
         let transactions = find_all_by_type_name(&root_element, "TransactionRow");
         if transactions.is_empty() {
             return;
@@ -253,9 +310,10 @@ impl EditOutflow {
         // TODO: test that the balance in the transaction changes
         // TODO: negative outflow converts to expense
         // FIXME: is it generating the same amount?
-        let amount = Money::new(rng.i64(0..));
         let root_element = app.root_element();
+        root_element.find_by_accessible_label("Spending").click();
 
+        let amount = Money::new(rng.i64(0..));
         let transactions = find_all_by_type_name(&root_element, "TransactionRow");
         if transactions.is_empty() {
             return;
@@ -285,7 +343,6 @@ impl EditOutflow {
 
         let settings: Settings = app.global();
         settings.set_font_family("CAD".to_shared_string());
-        let formatter = CurrencyFormatter::with_currency(Currency::CAD);
     }
 }
 
@@ -365,12 +422,13 @@ impl TestRunner {
 
     fn step(&mut self) {
         let rng = &mut self.rng;
-        for i in 0..rng.u8(1..=10) {
+        for _ in 0..rng.u8(1..=10) {
             match &self.actions[rng.usize(0..self.actions.len())] {
                 Action::CreateTransaction(act) => act.execute(&self.app, rng),
                 Action::EditOutflow(act) => act.execute(&self.app, rng),
                 Action::CreateAccount(act) => act.execute(&self.app, rng),
                 Action::EditNote(act) => act.execute(&self.app, rng),
+                Action::CreateCategoryGroup(act) => act.execute(&self.app, rng),
             }
         }
     }
@@ -446,6 +504,7 @@ fn run(seed: u64) {
         Action::EditOutflow(EditOutflow),
         Action::CreateTransaction(CreateTransaction),
         Action::EditNote(EditNote),
+        Action::CreateCategoryGroup(CreateCategoryGroup),
     ];
 
     // Pick a random subset of actions
