@@ -38,6 +38,8 @@ component CategoryItem inherits VerticalLayout {
     property <string> total-assigned: CategoryState.total-assigned(category.id, current-date);
     property <string> total-spent-in-category: CategoryState.total-spent-in-category(category.id, current-date);
     callback selected(string);
+    accessible-id: category.id;
+    accessible-role: none;
 
     function budget-progress() -> float {
         if Api.money-to-float(total-spent-in-category) == 0 {
@@ -90,7 +92,7 @@ component CategoryItem inherits VerticalLayout {
                     alignment: space-between;
                     cross-axis-alignment: center;
 
-                    InlineTextField {
+                    title := InlineTextField {
                         text: category.title;
                         enabled: category.account-id.is-empty;
                         accepted(value) => CategoryState.update-category(category.id, value);
@@ -251,7 +253,7 @@ component CategoryGroupItem {
                 spacing: 12px;
 
                 text-field := TextField {
-                    placeholder-text: @tr("New category");
+                    init => self.focus();
                     accepted => {
                         CategoryState.create-category(self.text,category-group.id);
                         category-popup.close();
@@ -318,6 +320,7 @@ component CategoryGroupItem {
                     theme: ghost;
                     enabled: category-group.kind != credit-payment;
                     visible: category-group.kind != credit-payment;
+                    accessible-label: @tr("Create category");
                     clicked => {
                         category-popup.show();
                     }

@@ -8,8 +8,8 @@ use fastrand::Rng;
 use i_slint_backend_testing::{
     AccessibleRole, ElementHandle, ElementRoot, send_key_combo, send_keyboard_string_sequence,
 };
+use mukwa::ui::AccountState;
 use mukwa::ui::{self, CategoryState, GroupKind, MainWindow, TransactionState};
-use mukwa::ui::{AccountState, Settings};
 use mukwa::{SettingsStore, controllers, testing::*};
 use mukwa_core::Money;
 use mukwa_core::create_test_db;
@@ -34,6 +34,62 @@ enum Action {
     EditOutflow(EditOutflow),
     EditNote(EditNote),
     CreateCategoryGroup(CreateCategoryGroup),
+    CreateCategory(CreateCategory),
+}
+
+#[derive(Debug, Clone)]
+struct CreateCategory;
+
+impl CreateCategory {
+    fn execute(&self, app: &MainWindow, rng: &mut Rng) {
+        let _span = trace_span!("CreateCategory").entered();
+        let root_element = app.root_element();
+        root_element.find_by_accessible_label("Spending").click();
+
+        let state: CategoryState = app.global();
+        let groups_len = state.get_category_groups().iter().len();
+        if groups_len < 2 {
+            trace!("Returning as there are no available category groups");
+            return;
+        }
+
+        let categories_len = state.get_categories().iter().len();
+        let group_items = root_element.find_all_by_type_name("CategoryGroupItem");
+        // TODO: test that the category is created in the group as well
+        let item = &group_items[rng.usize(1..group_items.len())];
+        item.find_by_accessible_label("Create category").click();
+
+        let name = gen_string(rng);
+        send_keyboard_string_sequence(app, &name);
+
+        let cancel = rng.f32() <= 0.3;
+        if cancel {
+            root_element.find_by_accessible_label("Cancel").click();
+            let categories: Vec<_> = state.get_categories().iter().collect();
+            trace!("Cancelled create category form");
+            assert_eq!(categories.len(), categories_len);
+            return;
+        }
+
+        root_element.find_by_accessible_label("Confirm").click();
+        let categories: Vec<_> = state.get_categories().iter().collect();
+        assert_eq!(categories.len(), categories_len + 1);
+        let category_items = root_element.find_all_by_type_name("CategoryItem");
+        // TODO: test that the budget is 0
+        let category_id = &categories.last().unwrap().id;
+        assert_eq!(category_items.len(), categories_len + 1);
+        let category_item = root_element.find_by_accessible_id(category_id);
+
+        assert_eq!(
+            category_item
+                .find_by_id("CategoryItem::title")
+                .find_by_type_name("Text")
+                .accessible_label()
+                .unwrap(),
+            name
+        );
+        trace!(name = name, "Created new category");
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -53,7 +109,7 @@ impl CreateCategoryGroup {
 
         let category_state: CategoryState = app.global();
         let groups_len = category_state.get_category_groups().iter().len();
-        let cancel = rng.f32() <= 0.3;
+        let cancel = rng.f32() <= 0.1;
         if cancel {
             root_element.find_by_accessible_label("Cancel").click();
             let groups: Vec<_> = category_state.get_category_groups().iter().collect();
@@ -311,14 +367,18 @@ impl EditOutflow {
         // TODO: negative outflow converts to expense
         // FIXME: is it generating the same amount?
         let root_element = app.root_element();
-        root_element.find_by_accessible_label("Spending").click();
+        root_element
+            .find_by_accessible_label("All accounts")
+            .click();
 
         let amount = Money::new(rng.i64(0..));
-        let transactions = find_all_by_type_name(&root_element, "TransactionRow");
+        let state: TransactionState = app.global();
+        let transactions: Vec<_> = state.get_all_transactions().iter().collect();
         if transactions.is_empty() {
             return;
         }
 
+        let transactions = find_all_by_type_name(&root_element, "TransactionRow");
         let transaction = rng.choice(&transactions).unwrap();
         let transaction_id = transaction.accessible_id().unwrap();
 
@@ -331,7 +391,6 @@ impl EditOutflow {
         i_slint_backend_testing::send_keyboard_string_sequence(app, &amount.to_string());
         i_slint_backend_testing::send_key_combo(app, [Key::Return]);
 
-        let state: TransactionState = app.global();
         let transactions: Vec<_> = state.get_all_transactions().iter().collect();
         let transaction = transactions
             .iter()
@@ -340,9 +399,6 @@ impl EditOutflow {
 
         trace!(amount=?amount,transaction_id=?transaction_id,"Edited outflow");
         assert_eq!(transaction.amount, amount.to_shared_string());
-
-        let settings: Settings = app.global();
-        settings.set_font_family("CAD".to_shared_string());
     }
 }
 
@@ -429,6 +485,7 @@ impl TestRunner {
                 Action::CreateAccount(act) => act.execute(&self.app, rng),
                 Action::EditNote(act) => act.execute(&self.app, rng),
                 Action::CreateCategoryGroup(act) => act.execute(&self.app, rng),
+                Action::CreateCategory(act) => act.execute(&self.app, rng),
             }
         }
     }
@@ -505,6 +562,7 @@ fn run(seed: u64) {
         Action::CreateTransaction(CreateTransaction),
         Action::EditNote(EditNote),
         Action::CreateCategoryGroup(CreateCategoryGroup),
+        Action::CreateCategory(CreateCategory),
     ];
 
     // Pick a random subset of actions
@@ -522,6 +580,7 @@ fn run(seed: u64) {
         return;
     }
 
+    println!("Shrinking action set...");
     // TODO: run in reverse as well to isolate more
     while actions.len() > 1 {
         let mut new_actions = actions.clone();
