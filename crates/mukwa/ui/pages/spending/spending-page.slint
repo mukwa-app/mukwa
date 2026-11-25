@@ -462,7 +462,7 @@ component SpendingPageBody inherits VerticalLayout {
             spacing: 12px;
 
             text-field := TextField {
-                placeholder-text: @tr("New category group");
+                init => self.focus();
                 accepted => {
                     CategoryState.create-category-group(self.text);
                     popup.close();

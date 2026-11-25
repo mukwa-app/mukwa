@@ -13,6 +13,10 @@ migrate:
 run:
     cargo run --bin mukwa
 
+# Run the property tester
+simulacrum:
+    cargo run --bin simulacrum
+
 lint:
     cargo clippy --all-targets
 
