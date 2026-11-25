@@ -10,7 +10,7 @@ def "main build" [] {
     if not ("bin/flatpak-cargo-generator.py" | path exists) {
         print "Installing flatpak-cargo-generator.py from https://github.com/flatpak/flatpak-builder-tools/tree/master/cargo"
         mkdir bin/
-        wget https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/refs/heads/master/cargo/flatpak-cargo-generator.py -O bin/flatpak-cargo-generator.py
+        curl https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/refs/heads/master/cargo/flatpak-cargo-generator.py -o bin/flatpak-cargo-generator.py
     }
 
     if not (".venv" | path exists) {
