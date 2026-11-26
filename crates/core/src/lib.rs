@@ -8,6 +8,7 @@ pub mod migrator;
 mod money;
 pub mod plot;
 pub mod service;
+pub mod store;
 
 pub use error::{Error, Result};
 pub use money::{Currency, Money};
