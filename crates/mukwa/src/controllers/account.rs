@@ -202,6 +202,7 @@ impl AccountController {
             account_options.push(ComboBoxItem {
                 value: account.id.to_shared_string(),
                 text: account.name.to_shared_string(),
+                ..Default::default()
             });
         }
         self.state

@@ -26,6 +26,7 @@ pub fn bind(window: &MainWindow, service: &Service) {
                 let item = ComboBoxItem {
                     text: cell.clone(),
                     value: index.to_shared_string(),
+                    ..Default::default()
                 };
                 combobox_items.push(item);
             }

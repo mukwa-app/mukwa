@@ -40,6 +40,7 @@ impl From<mukwa_core::service::Account> for ComboBoxItem {
         Self {
             value: account.id.to_string().into(),
             text: account.name.to_string().into(),
+            ..Default::default()
         }
     }
 }
@@ -49,6 +50,7 @@ impl From<&mukwa_core::service::Account> for ComboBoxItem {
         Self {
             value: account.id.to_string().into(),
             text: account.name.to_string().into(),
+            ..Default::default()
         }
     }
 }
@@ -168,6 +170,7 @@ impl From<mukwa_core::service::Category> for ComboBoxItem {
         Self {
             value: value.id.to_string().into(),
             text: value.title.to_string().into(),
+            ..Default::default()
         }
     }
 }
@@ -177,6 +180,7 @@ impl From<&mukwa_core::service::Category> for ComboBoxItem {
         Self {
             value: value.id.to_string().into(),
             text: value.title.to_string().into(),
+            ..Default::default()
         }
     }
 }

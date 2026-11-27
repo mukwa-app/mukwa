@@ -10,6 +10,7 @@ import { ScrollView } from "scrollview.slint";
 export struct ComboBoxItem {
     value: string,
     text: string,
+    helper-text: string
 }
 
 export component ComboBox {
@@ -244,10 +245,16 @@ export component ComboBox {
 
                             HorizontalLayout {
                                 cross-axis-alignment: center;
+                                alignment: option.helper-text.is-empty ? start : space-between;
                                 padding: 8px;
 
                                 Text {
                                     text: option.text;
+                                    color: Colors.textBody;
+                                }
+
+                                if !option.helper-text.is-empty: Text {
+                                    text: option.helper-text;
                                     color: Colors.textBody;
                                 }
                             }

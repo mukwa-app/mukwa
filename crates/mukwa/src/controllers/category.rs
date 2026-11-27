@@ -377,6 +377,7 @@ impl CategoryController {
             .map(|c| ui::ComboBoxItem {
                 text: c.title.to_shared_string(),
                 value: c.id.to_shared_string(),
+                ..Default::default()
             })
             .collect();
         let categories: Vec<ui::Category> = categories.iter().map(|c| c.into()).collect();

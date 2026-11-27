@@ -33,6 +33,7 @@ pub fn bind(window: &MainWindow) {
         .map(|family| ui::ComboBoxItem {
             value: family.to_shared_string(),
             text: family.to_shared_string(),
+            ..Default::default()
         })
         .collect();
     let elapsed = instant.elapsed().as_millis();
@@ -43,6 +44,7 @@ pub fn bind(window: &MainWindow) {
         .map(|currency| ui::ComboBoxItem {
             value: currency.code().to_shared_string(),
             text: currency.name().to_shared_string(),
+            ..Default::default()
         })
         .collect();
 
