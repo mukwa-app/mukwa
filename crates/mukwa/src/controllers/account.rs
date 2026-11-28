@@ -337,10 +337,12 @@ mod test {
         assert!(account_options.contains(&ComboBoxItem {
             text: a1.name.to_shared_string(),
             value: a1.id.to_shared_string(),
+            ..Default::default()
         }));
         assert!(account_options.contains(&ComboBoxItem {
             text: a2.name.to_shared_string(),
             value: a2.id.to_shared_string(),
+            ..Default::default()
         }));
         assert!(accounts.contains(&a1.into()));
         assert!(accounts.contains(&a2.into()));

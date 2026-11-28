@@ -14,7 +14,7 @@ use mukwa::{
         self, AccountState, CategoryState, CreateTransactionOpts, Settings, State, TransactionState,
     },
 };
-use mukwa_core::service::TransactionKind;
+use mukwa_core::service::{CreateBudgetOpts, TransactionKind};
 use mukwa_core::{Currency, Money, fmt::CurrencyFormatter, service::AccountType};
 use slint::{
     ComponentHandle, Model, SharedString, ToSharedString,
@@ -1278,5 +1278,58 @@ fn delete_transaction_keyboard_shortcuts() -> Result<()> {
         .map(|t| t.id)
         .collect();
     assert!(ids.is_empty());
+    Ok(())
+}
+
+#[test]
+fn category_combobox_shows_available_to_spend() -> Result<()> {
+    let (app, service) = setup()?;
+    service.create_account("", AccountType::Cash)?;
+    let group = service.create_category_group("")?;
+    let category = service.create_category("Rent", group.id)?;
+    service.create_budget(CreateBudgetOpts {
+        amount: Some(Money::new(100)),
+        category_id: category.id,
+        ..Default::default()
+    })?;
+
+    service
+        .create_expense()
+        .category(category.id)
+        .amount(Money::new(50))
+        .submit()?;
+    let transaction_state: TransactionState = app.global();
+    transaction_state.invoke_load_transactions();
+    let category_state: CategoryState = app.global();
+    category_state.invoke_load_state();
+
+    let settings: Settings = app.global();
+    settings.set_currency_code("CAD".to_shared_string());
+
+    let root_element = app.root_element();
+    let transaction_row = root_element.find_by_type_name("TransactionRow");
+    let category_cell = transaction_row.find_by_type_name("CategoryCell");
+    category_cell.click();
+    let category_cell = root_element.find_by_type_name("CategoryCell");
+
+    category_cell.visit_descendants(|el| {
+        dbg!(el.accessible_label());
+        dbg!(el.type_name());
+        dbg!(el.accessible_role());
+        std::ops::ControlFlow::<ElementHandle>::Continue(())
+    });
+    let items = category_cell
+        .query_descendants()
+        .match_accessible_role(AccessibleRole::ListItem)
+        .find_all();
+    dbg!(items.len());
+    // items[0].visit_descendants(|el| {
+    // dbg!(el.accessible_label());
+    // std::ops::ControlFlow::<ElementHandle>::Continue(())
+    // });
+    // items[1].visit_descendants(|el| {
+    // dbg!(el.accessible_label());
+    // std::ops::ControlFlow::<ElementHandle>::Continue(())
+    // });
     Ok(())
 }
