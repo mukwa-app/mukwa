@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
-use crate::ui;
+use crate::ui::{self, ComboBoxItem};
 use crate::ui::{CategoryState, MainWindow};
 use jiff::ZonedDateTime;
 use jiff::civil::Date;
@@ -39,6 +39,17 @@ impl CategoryController {
         };
 
         controller.load_state()?;
+
+        category_state.on_get_category_options({
+            let controller = controller.clone();
+            move |categories| {
+                controller
+                    .get_category_options(categories.iter())
+                    .context("Failed to get category options")
+                    .inspect_err(|err| warn!("{}", err.report()))
+                    .unwrap_or_default()
+            }
+        });
 
         category_state.on_edit_budget_target({
             let controller = controller.clone();
@@ -416,6 +427,29 @@ impl CategoryController {
         self.state
             .set_categories(ModelRc::new(Rc::new(VecModel::from(categories))));
         Ok(())
+    }
+
+    fn get_category_options(
+        &self,
+        mut categories: impl Iterator<Item = ui::Category>,
+    ) -> crate::Result<ModelRc<ComboBoxItem>> {
+        // TODO: might be bad for performance
+        // TODO: skip account categories
+        let mut items = vec![];
+        while let Some(category) = categories.next() {
+            let id = Uuid::parse_str(&category.id)?;
+            let available = self
+                .service
+                .available_to_spend(id, ZonedDateTime::now().date())?;
+            let item = ComboBoxItem {
+                value: category.id.clone(),
+                text: category.title.clone(),
+                helper_text: available.to_shared_string(),
+            };
+            items.push(item);
+        }
+
+        Ok(ModelRc::new(VecModel::from(items)))
     }
 
     fn load_category_groups(&self) -> crate::Result<()> {

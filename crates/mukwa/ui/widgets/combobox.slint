@@ -7,11 +7,7 @@ import { FontSize } from "../theme.slint";
 import { Icon, Icons } from "../icons.slint";
 import { ScrollView } from "scrollview.slint";
 
-export struct ComboBoxItem {
-    value: string,
-    text: string,
-    helper-text: string
-}
+export struct ComboBoxItem { value: string, text: string, helper-text: string }
 
 export component ComboBox {
     in-out property <string> label;
@@ -22,6 +18,10 @@ export component ComboBox {
     out property <int> selected-index: -1;
 
     callback changed(value: string);
+    pure callback map-helper-text(value: string) -> string;
+    map-helper-text(value) => {
+        return value;
+    }
 
     init => {
         current-index = options.find-index((option) => option.value == current-value);
@@ -254,7 +254,7 @@ export component ComboBox {
                                 }
 
                                 if !option.helper-text.is-empty: Text {
-                                    text: option.helper-text;
+                                    text: map-helper-text(option.helper-text);
                                     color: Colors.textBody;
                                 }
                             }

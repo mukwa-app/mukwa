@@ -120,6 +120,7 @@ export component Calendar {
 
     VerticalLayout {
         padding: 8px;
+
         HorizontalLayout {
             alignment: space-between;
             padding: 4px;
@@ -147,6 +148,7 @@ export component Calendar {
 
         GridLayout {
             spacing: 4px;
+
             Row {
                 for day-title in day-titles: Rectangle {
                     Text {
@@ -204,6 +206,7 @@ export component Calendar {
                         padding: 4px;
                         alignment: center;
                         cross-axis-alignment: center;
+
                         Text {
                             text: enabled ? day : "";
                             color: day == date.day ? white : Colors.textBody;

@@ -213,10 +213,13 @@ component CategoryCell inherits TableCell {
 
     if self.is-editing: ComboBox {
         width: 100%;
-        options: CategoryState.category-options;
+        options: CategoryState.get-category-options(CategoryState.categories);
         current-value: category.id;
         init => {
             self.open();
+        }
+        map-helper-text(value) => {
+            return State.format-money(value, Settings.currency-code);
         }
         changed(value) => {
             parent.changed(value);

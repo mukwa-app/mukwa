@@ -106,6 +106,7 @@ component BudgetTarget inherits Rectangle {
 
         HorizontalLayout {
             alignment: space-between;
+
             Text {
                 text: @tr("Target");
                 color: Colors.textBody;
@@ -122,6 +123,7 @@ component BudgetTarget inherits Rectangle {
         if !has-target && !form-active: VerticalLayout {
             spacing: 8px;
             alignment: start;
+
             Text {
                 text: @tr("A budget target is an estimate of how much you want to assign to a category each month.");
                 wrap: word-wrap;
@@ -163,6 +165,7 @@ component BudgetTarget inherits Rectangle {
 
             HorizontalLayout {
                 spacing: 8px;
+
                 PrimaryButton {
                     text: @tr("Assign");
                     theme: neutral;

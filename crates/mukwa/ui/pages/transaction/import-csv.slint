@@ -87,6 +87,7 @@ export component ImportCsvDialog inherits PopupWindow {
             spacing: 16px;
             cross-axis-alignment: start;
             preferred-height: date-combobox.preferred-height;
+
             date-combobox := ComboBox {
                 label: @tr("Date");
                 current-value: ImportCsvState.records[0][ImportCsvState.date-column-index];
@@ -126,9 +127,11 @@ export component ImportCsvDialog inherits PopupWindow {
 
         Table {
             property <int> length: 4;
+
             TableRow {
                 for column in columns: TableCell {
                     width: parent.width / length;
+
                     Text {
                         text: column;
                         font-weight: FontWeight.semi-bold;
@@ -140,6 +143,7 @@ export component ImportCsvDialog inherits PopupWindow {
             for record in ImportCsvState.records: TableRow {
                 TableCell {
                     width: parent.width / length;
+
                     Text {
                         text: record[ImportCsvState.date-column-index];
                         color: Colors.textBody;
@@ -148,6 +152,7 @@ export component ImportCsvDialog inherits PopupWindow {
 
                 TableCell {
                     width: parent.width / length;
+
                     Text {
                         text: record[ImportCsvState.note-column-index];
                         color: Colors.textBody;
@@ -156,6 +161,7 @@ export component ImportCsvDialog inherits PopupWindow {
 
                 TableCell {
                     width: parent.width / length;
+
                     Text {
                         text: record[ImportCsvState.outflow-column-index];
                         color: Colors.textBody;
@@ -164,6 +170,7 @@ export component ImportCsvDialog inherits PopupWindow {
 
                 TableCell {
                     width: parent.width / length;
+
                     Text {
                         text: record[ImportCsvState.inflow-column-index];
                         color: Colors.textBody;
@@ -202,6 +209,7 @@ export component ImportCsvDialog inherits PopupWindow {
             HorizontalLayout {
                 spacing: 8px;
                 cross-axis-alignment: center;
+
                 Checkbox {
                     checked <=> ImportCsvState.merge-existing-transactions;
                 }

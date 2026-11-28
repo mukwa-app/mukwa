@@ -162,6 +162,7 @@ export global CategoryState {
     pure callback total-assigned(id: string, date: Date) -> string;
     pure callback total-assigned-in-group(id: string, date: Date) -> string;
     pure callback left-to-spend-in-group(id: string, date: Date) -> string;
+    pure callback get-category-options(categories: [Category]) -> [ComboBoxItem];
 
     in-out property <[Category]> categories;
     in-out property <[CategoryGroup]> category-groups;

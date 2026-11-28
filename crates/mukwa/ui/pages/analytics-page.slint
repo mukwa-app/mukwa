@@ -118,6 +118,7 @@ component CategoryFilter {
             for category[index] in CategoryState.categories: HorizontalLayout {
                 cross-axis-alignment: center;
                 spacing: 8px;
+
                 Checkbox {
                     checked: AnalyticsApi.is-category-filtered(category.id);
                     toggled => {
@@ -162,6 +163,7 @@ component CategoryItem inherits VerticalLayout {
     HorizontalLayout {
         alignment: space-between;
         cross-axis-alignment: center;
+
         label := Text {
             text: slice.label;
             color: Colors.textBody;
@@ -177,6 +179,7 @@ component CategoryItem inherits VerticalLayout {
         spacing: 8px;
         width: 100%;
         cross-axis-alignment: center;
+
         Rectangle {
             width: parent.width * max(slice.ratio,0.08) - percent.preferred-width;
             height: 20px;
@@ -199,6 +202,7 @@ component SideBar inherits VerticalLayout {
         padding: 16px;
         alignment: space-between;
         cross-axis-alignment: center;
+
         Text {
             text: @tr("Category");
             font-weight: FontWeight.medium;
@@ -239,6 +243,7 @@ component PieChart inherits VerticalLayout {
     total-spent := VerticalLayout {
         spacing: 8px;
         alignment: start;
+
         Text {
             text: @tr("Total spent");
             color: Colors.textBody;
@@ -255,6 +260,7 @@ component PieChart inherits VerticalLayout {
 
     HorizontalLayout {
         alignment: center;
+
         Rectangle {
             width: 500px;
             height: 500px;
@@ -294,6 +300,7 @@ component PieChart inherits VerticalLayout {
                 alignment: center;
                 cross-axis-alignment: center;
                 spacing: 4px;
+
                 Text {
                     text: @tr("Total spent");
                     color: Colors.textBody;
