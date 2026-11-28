@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Wakunguma Kalimukwa
 
 use i_slint_compiler::generator::OutputFormat;
+use i_slint_compiler::project_file::SlintEdition;
 use i_slint_compiler::{
     CompilerConfiguration, compile_syntax_node, diagnostics::BuildDiagnostics, generator, parser,
 };
@@ -77,6 +78,7 @@ fn main() {
         let syntax_node = parser::parse(case.source.clone(), None, &mut diag);
         let mut compiler_config = CompilerConfiguration::new(OutputFormat::Rust);
         compiler_config.debug_info = true;
+        compiler_config.edition = Some(SlintEdition::parse_supported("1.19").unwrap());
         compiler_config.include_paths = vec![include_path.clone()];
 
         let (root_component, diag, loader) =
