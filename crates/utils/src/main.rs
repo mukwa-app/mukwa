@@ -3,20 +3,21 @@
 
 use clap::{Parser, Subcommand};
 use jiff::ZonedDateTime;
-use mukwa_core::Money;
 use mukwa_core::auto_update::Manifest;
 use mukwa_core::error::ErrorExt;
 use mukwa_core::migrator::Migrator;
 use mukwa_core::service::{AccountType, GroupKind, Service};
+use mukwa_core::{Error, Money};
 use rusqlite::Connection;
 use std::collections::HashSet;
 use std::fmt::Write;
-use std::fs;
+use std::fs::{self, File};
 use std::io::{BufReader, Cursor, Read};
 use std::path::PathBuf;
 use tracing::{info, warn};
 use usvg::Node;
 use usvg::tiny_skia_path::{PathSegment, PathSegmentsIter};
+use walkdir::WalkDir;
 use zip::ZipArchive;
 
 /// Fills the [`Service`] with random realistic data.
@@ -172,7 +173,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Generate a database filled with random realistic data.
+    /// Generate a database filled with random semi-realistic data.
     Faker {
         /// The path to the sqlite database file
         #[arg(short, long, default_value = "data.sqlite")]
@@ -192,6 +193,11 @@ enum Command {
         /// The path to the sqlite database file
         #[arg(short, long, default_value = "data.sqlite")]
         path: PathBuf,
+    },
+    /// Check the formatting of .slint files
+    CheckFormat {
+        /// Directory containing .slint files
+        dir: PathBuf,
     },
 }
 
@@ -248,6 +254,7 @@ fn run() -> mukwa_core::Result<()> {
             }
         },
         Command::Faker { path } => generate_data(path)?,
+        Command::CheckFormat { dir } => check_slint_fmt(dir)?,
     }
     Ok(())
 }
@@ -261,6 +268,45 @@ fn main() {
     if let Err(err) = run() {
         warn!("{}", err.report());
     }
+}
+
+/// Returns an error if the `.slint` files are not formatted.
+///
+/// The Slint LSP has no `format --check` command, so to emulate that this function
+/// hashes the contents of `files`, runs the `slint-lsp format` command against each of the files and
+/// compares the two hashes.
+fn check_slint_fmt(dir: PathBuf) -> mukwa_core::Result<()> {
+    let mut contents = Vec::new();
+    let mut file_paths = vec![];
+    for entry in WalkDir::new(dir) {
+        let entry = entry.unwrap();
+        let path = entry.path();
+        if path.is_dir() {
+            continue;
+        }
+        if !(path.extension().unwrap_or_default().to_str().unwrap() == "slint") {
+            continue;
+        }
+        let mut file = File::open(path)?;
+        file.read_to_end(&mut contents)?;
+        file_paths.push(path.canonicalize()?);
+    }
+
+    let output = std::process::Command::new("slint-lsp")
+        .arg("format")
+        .args(file_paths)
+        .output()
+        .expect("Failed to run process");
+
+    if !output.status.success() {
+        let err = String::from_utf8(output.stderr).unwrap();
+        return Err(Error::new(&err));
+    }
+
+    if contents != output.stdout {
+        return Err(Error::new("Slint files are not formatted"));
+    }
+    Ok(())
 }
 
 fn generate_data(path: PathBuf) -> mukwa_core::Result<()> {
