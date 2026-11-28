@@ -1,3 +1,7 @@
+## (unreleased)
+
+- Category combo boxes display the amount of money left to spend.
+
 ## 0.4.1 - 2026-11-24
 
 - Added new keyboard shortcuts.
