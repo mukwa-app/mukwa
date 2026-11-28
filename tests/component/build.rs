@@ -3,7 +3,7 @@
 
 use i_slint_compiler::generator::OutputFormat;
 use i_slint_compiler::{
-    CompilerConfiguration, compile_syntax_node, diagnostics::BuildDiagnostics, generator, parser,
+    compile_syntax_node, diagnostics::BuildDiagnostics, generator, parser, CompilerConfiguration,
 };
 use std::fs;
 use std::fs::File;
@@ -42,7 +42,7 @@ struct TestCase {
 
 fn main() {
     unsafe {
-        std::env::set_var("SLINT_ENABLE_EXPERIMENTAL_FEATURES", "closures");
+        std::env::set_var("SLINT_ENABLE_EXPERIMENTAL_FEATURES", "closures,match");
     }
 
     println!("cargo:rerun-if-changed=../../crates/mukwa/ui");

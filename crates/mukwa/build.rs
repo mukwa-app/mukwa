@@ -3,7 +3,7 @@
 
 fn main() {
     unsafe {
-        std::env::set_var("SLINT_ENABLE_EXPERIMENTAL_FEATURES", "closures");
+        std::env::set_var("SLINT_ENABLE_EXPERIMENTAL_FEATURES", "closures,match");
         #[cfg(debug_assertions)]
         std::env::set_var("SLINT_EMIT_DEBUG_INFO", "1");
     }
