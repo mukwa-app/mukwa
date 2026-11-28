@@ -105,7 +105,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86_64,aarch64]
+        arch: [ x86_64,aarch64 ]
     permissions:
       contents: write
     steps:
@@ -123,6 +123,29 @@ jobs:
         with:
           name: mukwa-upload-${{ runner.os }}-${{matrix.arch}}
           path: target/bundle/**/*-Setup.exe
+  bundle-macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ x86_64,aarch64 ]
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: hustcer/setup-nu@v3
+        with:
+          version: 0.114.1
+      - uses: Swatinem/rust-cache@v2
+      - run: rustup target add x86_64-apple-darwin
+        if: ${{matrix.arch == 'x86_64'}}
+      - name: Bundle app
+        run: nu scripts/bundle-mac.nu ${{matrix.arch}}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mukwa-upload-${{ runner.os }}-${{matrix.arch}}
+          path: target/bundle/**/Mukwa-*.dmg
   release:
     permissions:
       contents: write
