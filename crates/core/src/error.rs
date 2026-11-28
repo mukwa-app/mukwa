@@ -24,7 +24,7 @@ pub trait ErrorExt<T, E> {
 #[derive(Debug)]
 pub struct Error {
     message: String,
-    source: Option<Box<dyn std::error::Error + Send>>,
+    source: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
 }
 
 impl Display for Error {
@@ -51,7 +51,10 @@ impl Error {
     }
 
     /// Creates a new `Error` with an underlying error source.
-    pub fn with_source<E: std::error::Error + Send + 'static>(message: &str, source: E) -> Self {
+    pub fn with_source<E: std::error::Error + Send + Sync + 'static>(
+        message: &str,
+        source: E,
+    ) -> Self {
         Self {
             message: message.to_owned(),
             source: Some(Box::new(source)),
@@ -81,7 +84,7 @@ impl Error {
 
 impl<T, E> ErrorExt<T, E> for std::result::Result<T, E>
 where
-    E: std::error::Error + Send + 'static,
+    E: std::error::Error + Send + Sync + 'static,
 {
     fn context<C>(self, context: C) -> std::result::Result<T, Error>
     where
@@ -130,9 +133,6 @@ from_error! {
     std::str::Utf8Error,
     std::string::FromUtf8Error,
     std::string::FromUtf16Error,
-    slint::PlatformError,
-    slint::EventLoopError,
-    slint::ModelError,
     std::fmt::Error,
     ureq::Error,
     semver::Error,

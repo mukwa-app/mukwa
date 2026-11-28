@@ -316,7 +316,7 @@ mod test {
     #[test]
     fn filter_category_adds_category() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let controller = AnalyticsController::bind(&app, &Service::open_in_memory()?);
         controller.filter_category(SharedString::from("C1"))?;
         let category = controller
@@ -332,7 +332,7 @@ mod test {
     #[test]
     fn filter_category_removes_category() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let controller = AnalyticsController::bind(&app, &Service::open_in_memory()?);
 
         controller.filter_category(SharedString::from("C1"))?;
@@ -355,7 +355,7 @@ mod test {
     #[test]
     fn draw_simple_pie_chart() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let group = service.create_category_group("")?;
         let groceries = service.create_category("Groceries", group.id)?;
@@ -399,7 +399,7 @@ mod test {
     #[test]
     fn transaction_has_no_category() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let group = service.create_category_group("")?;
         let entertainment = service.create_category("Entertainment", group.id)?;
@@ -437,7 +437,7 @@ mod test {
     #[test]
     fn total_spent_excludes_starting_balance() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         service.create_account("", AccountType::Cash)?;
         service
@@ -458,7 +458,7 @@ mod test {
     #[test]
     fn draw_pie_chart_with_no_transactions() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let controller = AnalyticsController::bind(&app, &service);
 
@@ -478,7 +478,7 @@ mod test {
     #[test]
     fn draw_pie_chart_with_no_expenses() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let account = service.create_account("", AccountType::Cash)?;
         let account2 = service.create_account("", AccountType::Cash)?;
@@ -505,7 +505,7 @@ mod test {
     #[test]
     fn draw_pie_chart_with_no_transactions_in_month() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let group = service.create_category_group("")?;
         let c1 = service.create_category("", group.id)?;
@@ -544,7 +544,7 @@ mod test {
     #[test]
     fn draw_pie_chart_with_filter() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let group = service.create_category_group("")?;
         let groceries = service.create_category("Groceries", group.id)?;
@@ -580,7 +580,7 @@ mod test {
     #[test]
     fn draw_pie_chart_excludes_incomes_and_transfers() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let group = service.create_category_group("")?;
         let account1 = service.create_account("", AccountType::Cash)?;
@@ -616,7 +616,7 @@ mod test {
     #[test]
     fn draw_pie_chart_excludes_starting_balance() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let group = service.create_category_group("")?;
         let groceries = service.create_category("Groceries", group.id)?;
@@ -650,7 +650,7 @@ mod test {
     #[test]
     fn draw_pie_chart_with_all_categories_filtered() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let group = service.create_category_group("")?;
         let groceries = service.create_category("Groceries", group.id)?;

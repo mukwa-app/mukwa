@@ -19,7 +19,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use tracing::debug;
 
-pub fn init_service(dir: impl AsRef<Path>) -> Result<Service> {
+pub fn init_service(dir: impl AsRef<Path>) -> anyhow::Result<Service> {
     let path = dir.as_ref().join("data.sqlite");
     debug!("Opening SQLite database at {:?}", &path);
     let mut connection = Connection::open(&path)?;
@@ -34,7 +34,7 @@ pub fn init_service(dir: impl AsRef<Path>) -> Result<Service> {
 }
 
 /// Run the application.
-pub fn run() -> Result<()> {
+pub fn run() -> anyhow::Result<()> {
     let data_dir = if cfg!(debug_assertions) {
         PathBuf::from(".mukwa")
     } else {

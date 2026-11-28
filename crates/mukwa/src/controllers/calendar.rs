@@ -105,7 +105,7 @@ mod test {
     #[test]
     fn increment_week() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         bind(&window);
         let test_date = |date: ui::Date, expected: ui::Date| {
             let calendar_state = window.global::<CalendarState>();

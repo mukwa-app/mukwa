@@ -222,7 +222,7 @@ mod test {
 
     fn setup() -> crate::Result<(MainWindow, AccountController)> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let service = Service::new(create_test_db());
         let controller = AccountController::bind(&app, &service);
         Ok((app, controller))
@@ -230,7 +230,7 @@ mod test {
 
     fn setup_with_service(service: &Service) -> crate::Result<(MainWindow, AccountController)> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let controller = AccountController::bind(&app, service);
         Ok((app, controller))
     }

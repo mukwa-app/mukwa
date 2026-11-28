@@ -24,7 +24,7 @@ use tempfile::tempdir;
 fn total_spent_all_only_includes_expenses() -> Result<()> {
     i_slint_backend_testing::init_no_event_loop();
     let temp = tempdir()?;
-    let service = init_service(temp.path())?;
+    let service = init_service(temp.path()).unwrap();
     service.create_account("", AccountType::Cash)?;
     service.create_expense().amount(Money::new(200)).submit()?;
     service.create_expense().amount(Money::new(500)).submit()?;
@@ -33,7 +33,7 @@ fn total_spent_all_only_includes_expenses() -> Result<()> {
         .amount(Money::new(10_000))
         .submit()?;
     let settings = SettingsStore::open(temp.path().join("settings.toml"))?;
-    let window = MainWindow::new()?;
+    let window = MainWindow::new().unwrap();
     controllers::bind_all(&window, &service, &settings)?;
     let account_state = window.global::<ui::AccountState>();
     let total = account_state.invoke_total_spent_all(ZonedDateTime::now().date().into());
@@ -45,7 +45,7 @@ fn total_spent_all_only_includes_expenses() -> Result<()> {
 fn total_spent_all_filters_by_month() -> Result<()> {
     i_slint_backend_testing::init_no_event_loop();
     let temp = tempdir()?;
-    let service = init_service(temp.path())?;
+    let service = init_service(temp.path()).unwrap();
     service.create_account("", AccountType::Cash)?;
     service
         .create_expense()
@@ -63,7 +63,7 @@ fn total_spent_all_filters_by_month() -> Result<()> {
         month: 1,
         day: 1,
     };
-    let window = MainWindow::new()?;
+    let window = MainWindow::new().unwrap();
     let settings = SettingsStore::open(temp.path().join("settings.toml"))?;
     controllers::bind_all(&window, &service, &settings)?;
     let account_state = window.global::<ui::AccountState>();
@@ -76,7 +76,7 @@ fn total_spent_all_filters_by_month() -> Result<()> {
 fn draw_pie_chart_filters_by_date() -> Result<()> {
     i_slint_backend_testing::init_no_event_loop();
     let temp = tempdir()?;
-    let service = init_service(temp.path())?;
+    let service = init_service(temp.path()).unwrap();
     service.create_account("", AccountType::Cash)?;
     let group = service.create_category_group("")?;
     let category = service.create_category("Groceries", group.id)?;
@@ -100,7 +100,7 @@ fn draw_pie_chart_filters_by_date() -> Result<()> {
         .amount(Money::new(200))
         .submit()?;
 
-    let window = MainWindow::new()?;
+    let window = MainWindow::new().unwrap();
     let settings = SettingsStore::open(temp.path().join("settings.toml"))?;
     controllers::bind_all(&window, &service, &settings)?;
     let analytics = window.global::<ui::AnalyticsApi>();
@@ -117,7 +117,7 @@ fn draw_pie_chart_filters_by_date() -> Result<()> {
 fn draw_pie_chart_sorts_categories() -> Result<()> {
     i_slint_backend_testing::init_no_event_loop();
     let temp = tempdir()?;
-    let service = init_service(temp.path())?;
+    let service = init_service(temp.path()).unwrap();
     service.create_account("", AccountType::Cash)?;
     let group = service.create_category_group("")?;
     let groceries = service.create_category("Groceries", group.id)?;
@@ -140,7 +140,7 @@ fn draw_pie_chart_sorts_categories() -> Result<()> {
         .amount(Money::new(70))
         .submit()?;
 
-    let window = MainWindow::new()?;
+    let window = MainWindow::new().unwrap();
     let settings = SettingsStore::open(temp.path().join("settings.toml"))?;
     controllers::bind_all(&window, &service, &settings)?;
     let analytics = window.global::<ui::AnalyticsApi>();

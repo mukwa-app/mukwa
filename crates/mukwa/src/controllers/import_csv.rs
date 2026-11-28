@@ -188,7 +188,7 @@ mod test {
     #[test]
     fn parse_expense() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let account = service.create_account("", AccountType::Cash)?;
         let csv_state = window.global::<ImportCsvState>();
@@ -213,7 +213,7 @@ mod test {
     #[test]
     fn parse_date() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let account = service.create_account("", AccountType::Cash)?;
         let csv_state = window.global::<ImportCsvState>();
@@ -236,7 +236,7 @@ mod test {
     #[test]
     fn parse_income() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let account = service.create_account("", AccountType::Cash)?;
         let csv_state = window.global::<ImportCsvState>();
@@ -261,7 +261,7 @@ mod test {
     #[test]
     fn imported_transactions_are_unconfirmed() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let account = service.create_account("", AccountType::Cash)?;
         let csv_state = window.global::<ImportCsvState>();
@@ -284,7 +284,7 @@ mod test {
     #[test]
     fn merge_existing_transactions() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let account = service.create_account("", AccountType::Cash)?;
         service
@@ -319,7 +319,7 @@ mod test {
     #[test]
     fn parse_empty_records() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let account = service.create_account("", AccountType::Cash)?;
         let csv_state = window.global::<ui::ImportCsvState>();
@@ -334,7 +334,7 @@ mod test {
     #[test]
     fn read_empty_csv_returns_error() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let csv_state = window.global::<ImportCsvState>();
         let result = read_csv(DataTransfer::default(), &csv_state);
         assert!(result.is_err());

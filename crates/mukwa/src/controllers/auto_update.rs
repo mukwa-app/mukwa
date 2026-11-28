@@ -298,7 +298,7 @@ mod test {
         release.artifacts.insert(Platform::WindowsX64, artifact);
 
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let mut controller = AutoUpdateController::bind(&app)?;
         controller.update_dir = temp.path().to_owned();
         smol::block_on(async {
@@ -327,7 +327,7 @@ mod test {
         release.artifacts.insert(Platform::WindowsX64, artifact);
 
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let mut controller = AutoUpdateController::bind(&app)?;
         controller.update_dir = temp.path().to_owned();
         smol::block_on(async {
@@ -341,7 +341,7 @@ mod test {
     #[test]
     fn download_update() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let mut controller = AutoUpdateController::bind(&app)?;
         let temp = tempdir()?;
         controller.update_dir = temp.path().to_owned();
@@ -404,7 +404,7 @@ mod test {
     #[test]
     fn update_file_corrupted() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let mut controller = AutoUpdateController::bind(&app)?;
         let temp = tempdir()?;
         controller.update_dir = temp.path().to_owned();
@@ -448,7 +448,7 @@ mod test {
     #[test]
     fn release_artifact_not_found() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let app = MainWindow::new()?;
+        let app = MainWindow::new().unwrap();
         let mut controller = AutoUpdateController::bind(&app)?;
         let temp = tempdir()?;
         controller.update_dir = temp.path().to_owned();
