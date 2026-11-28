@@ -479,6 +479,7 @@ fn run(seed: u64) {
     }
 
     println!("The failing set of actions is {:?}", actions);
+    std::process::exit(1);
 }
 
 fn main() -> mukwa_core::Result<()> {
