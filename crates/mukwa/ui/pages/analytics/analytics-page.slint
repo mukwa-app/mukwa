@@ -3,12 +3,18 @@
 
 import { Colors } from "../../colors.slint";
 import { FontSize } from "../../theme.slint";
-import { State, Api, CategoryState, TransactionState } from "../../globals.slint";
+import {
+    State,
+    Api,
+    CategoryState,
+    TransactionState,
+} from "../../globals.slint";
 import { Settings } from "../../settings.slint";
 import { IconButton, Button, PrimaryButton } from "../../widgets.slint";
 import { Date, CalendarState } from "../../widgets/calendar.slint";
 import { Checkbox } from "../../widgets/checkbox.slint";
 import { Icons } from "../../icons.slint";
+import { BarChartSection } from "bar-chart.slint";
 
 export struct PieChartSlice {
     fill: color,
@@ -310,7 +316,7 @@ component PieChart inherits VerticalLayout {
     }
 }
 
-export component AnalyticsPage inherits HorizontalLayout {
+component PieChartSection inherits HorizontalLayout {
     property <[PieChartSlice]> pie-chart-slices: AnalyticsApi.draw-pie-chart(500px, 500px,AnalyticsApi.current-date);
 
     VerticalLayout {
@@ -354,5 +360,50 @@ export component AnalyticsPage inherits HorizontalLayout {
 
     SideBar {
         pie-chart-slices: pie-chart-slices;
+    }
+}
+
+enum Section {
+    pie-chart,
+    bar-chart,
+}
+
+component Tab {
+    in property <string> text;
+    callback clicked();
+
+    TouchArea {
+        Text {
+            text: text;
+            color: Colors.textBody;
+        }
+
+        clicked => clicked();
+    }
+}
+
+export component AnalyticsPage inherits VerticalLayout {
+    property <Section> section: pie-chart;
+
+    HorizontalLayout {
+        alignment: start;
+        padding: 12px;
+        Tab {
+            text: @tr("Category breakdown");
+            clicked => {
+                section = pie-chart;
+            }
+        }
+        Tab {
+            text: @tr("Net worth");
+            clicked => {
+                section = bar-chart;
+            }
+        }
+    }
+
+    match section {
+        pie-chart: PieChartSection { }
+        bar-chart: BarChartSection { }
     }
 }
