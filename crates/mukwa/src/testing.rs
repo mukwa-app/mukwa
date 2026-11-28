@@ -89,7 +89,7 @@ impl ElementHandleExt for ElementHandle {
 pub fn setup() -> crate::Result<(MainWindow, Service)> {
     i_slint_backend_testing::init_no_event_loop();
     let service = Service::new(create_test_db());
-    let app = MainWindow::new()?;
+    let app = MainWindow::new().unwrap();
     let settings = SettingsStore::open_in_memory();
     controllers::bind_all(&app, &service, &settings)?;
     Ok((app, service))

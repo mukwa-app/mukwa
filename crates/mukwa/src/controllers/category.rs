@@ -573,8 +573,12 @@ impl CategoryController {
         })?;
         self.state
             .get_category_options()
-            .push_row(category.clone().into())?;
-        self.state.get_categories().push_row(category.into())?;
+            .push_row(category.clone().into())
+            .map_err(|err| mukwa_core::Error::with_source(&err.to_string(), err))?;
+        self.state
+            .get_categories()
+            .push_row(category.into())
+            .map_err(|err| mukwa_core::Error::with_source(&err.to_string(), err))?;
         self.load_budgets()?;
         Ok(id)
     }
@@ -601,7 +605,8 @@ impl CategoryController {
         let id = category_group.id;
         self.state
             .get_category_groups()
-            .push_row(category_group.into())?;
+            .push_row(category_group.into())
+            .map_err(|err| mukwa_core::Error::with_source(&err.to_string(), err))?;
         Ok(id)
     }
 }
@@ -615,7 +620,7 @@ mod test {
     fn setup() -> crate::Result<(Service, CategoryState<'static>, MainWindow)> {
         i_slint_backend_testing::init_no_event_loop();
         let service = Service::open_in_memory()?;
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         bind(&window, &service)?;
         let category_state: CategoryState = window.global();
         let category_state = category_state.as_weak().unwrap();
@@ -631,7 +636,7 @@ mod test {
         let water = service.create_category("Water", bills.id)?;
 
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         CategoryController::bind(&window, &service)?;
 
         let category_state: CategoryState = window.global();
@@ -674,7 +679,7 @@ mod test {
         let service = Service::open_in_memory()?;
         let group = service.create_category_group("")?;
         service.create_category("", group.id)?;
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         bind(&window, &service)?;
 
         let category_state = window.global::<CategoryState>();
@@ -697,7 +702,7 @@ mod test {
         i_slint_backend_testing::init_no_event_loop();
         let service = Service::open_in_memory()?;
         let group = service.create_category_group("")?;
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         bind(&window, &service)?;
 
         let category_state = window.global::<CategoryState>();
@@ -724,7 +729,7 @@ mod test {
             category_id: category.id,
             month: Some(date(2020, 1, 1)),
         })?;
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         bind(&window, &service)?;
 
         let category_state = window.global::<CategoryState>();

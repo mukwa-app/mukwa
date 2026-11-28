@@ -55,7 +55,7 @@ fn main() {
     info!("Launching application");
 
     if let Err(err) = mukwa::run() {
-        error!("{}", err.report());
+        error!("{:?}", err);
     }
 
     info!("Closing application");

@@ -5,9 +5,9 @@ edition.workspace = true
 
 [dependencies]
 tracing.workspace = true
-i-slint-core.workspace = true
 
 [dev-dependencies]
+i-slint-core.workspace = true
 smol = "2.0.2"
 slint.workspace = true
 tracing-subscriber.workspace = true

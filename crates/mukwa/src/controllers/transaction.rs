@@ -418,10 +418,12 @@ impl TransactionController {
 
         self.transaction_state
             .get_transactions()
-            .insert_row(0, transaction.clone().into())?;
+            .insert_row(0, transaction.clone().into())
+            .map_err(|err| Error::with_source(&err.to_string(), err))?;
         self.transaction_state
             .get_all_transactions()
-            .insert_row(0, transaction.into())?;
+            .insert_row(0, transaction.into())
+            .map_err(|err| Error::with_source(&err.to_string(), err))?;
         Ok(())
     }
 
@@ -481,7 +483,8 @@ impl TransactionController {
         let transaction = self.service.duplicate_transaction(id)?;
         self.transaction_state
             .get_transactions()
-            .push_row(transaction.into())?;
+            .push_row(transaction.into())
+            .map_err(|err| Error::with_source(&err.to_string(), err))?;
         Ok(())
     }
 
@@ -594,7 +597,7 @@ mod test {
 
     fn setup(f: impl FnOnce(&Service)) -> crate::Result<TransactionController> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         f(&service);
         let controller = TransactionController::bind(&window, &service)?;
@@ -716,7 +719,7 @@ mod test {
     #[test]
     fn bind_loads_transactions_from_service() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let expense = service
             .create_expense()
@@ -734,7 +737,7 @@ mod test {
     #[test]
     fn delete_transaction() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let expense = service
             .create_expense()
@@ -760,7 +763,7 @@ mod test {
     #[test]
     fn create_expense() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let transaction_state: TransactionState = window.global();
         let account = service.create_account("", AccountType::Cash)?;
@@ -797,7 +800,7 @@ mod test {
     #[test]
     fn create_income() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let transaction_state: TransactionState = window.global();
         let account = service.create_account("", AccountType::Cash)?;
@@ -827,7 +830,7 @@ mod test {
     #[test]
     fn create_income_ignores_category() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let transaction_state: TransactionState = window.global();
         let account = service.create_account("", AccountType::Cash)?;
@@ -857,7 +860,7 @@ mod test {
     #[test]
     fn create_transaction_with_default_date() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let transaction_state: TransactionState = window.global();
         let account = service.create_account("", AccountType::Cash)?;
@@ -880,7 +883,7 @@ mod test {
     #[test]
     fn set_outflow_on_an_expense() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let transaction_state: TransactionState = window.global();
         let account = service.create_account("", AccountType::Cash)?;
@@ -902,7 +905,7 @@ mod test {
     #[test]
     fn set_outflow_on_an_income() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let transaction_state: TransactionState = window.global();
         let account = service.create_account("", AccountType::Cash)?;
@@ -929,7 +932,7 @@ mod test {
     #[test]
     fn audit_account() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let account = service.create_account("", AccountType::Cash)?;
         service.create_expense().account(account.id).submit()?;
@@ -947,7 +950,7 @@ mod test {
     #[test]
     fn select_transaction() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let transaction_state: TransactionState = window.global();
         TransactionController::bind(&window, &service)?;
@@ -974,7 +977,7 @@ mod test {
     #[test]
     fn delete_selected_transactions() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         service.create_account("", AccountType::Cash)?;
         let t1 = service.create_expense().submit()?;
@@ -1004,7 +1007,7 @@ mod test {
     #[test]
     fn delete_all_selected_transactions() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         service.create_account("", AccountType::Cash)?;
         let t1 = service.create_expense().submit()?;
@@ -1034,7 +1037,7 @@ mod test {
     #[test]
     fn do_not_rearrange_transactions() -> crate::Result<()> {
         i_slint_backend_testing::init_no_event_loop();
-        let window = MainWindow::new()?;
+        let window = MainWindow::new().unwrap();
         let service = Service::open_in_memory()?;
         let transaction_state: TransactionState = window.global();
         let a1 = service.create_account("", AccountType::Cash)?;
